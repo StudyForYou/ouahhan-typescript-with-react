@@ -4,7 +4,6 @@
 
 - 혼자 읽기 힘든 이펙티브 타입스크립트를 같이 공부한다.
 - 이해되지 않는 문장이 있다면, 그대로 넘기지 않는다.
-- 이 스터디를 통해 TypeScript의 
 - 이 스터디를 통해 typescript의 전반적인 부분에 대해 이해를 한다.
 
 ## 기간
@@ -74,5 +73,6 @@
 ## 기타
 
 ## Reference
+- [code-itch - 이펙티브 타입스크립트](https://github.com/code-itch/effective-typescript)
 - [위어소프트](https://github.com/WeareSoft)
 - [java-squid](https://github.com/java-squid/effective-java)
