@@ -1,0 +1,270 @@
+# 타입이란?
+
+## 자료형으로서의 타입
+
+컴퓨터의 메모리 공간은 한정적이기 때문에 값의 크기를 명시하면 컴퓨터가 값을 효율적이고 안전하게 저장할 수 있게 한다. (ex. 숫자는 8byte, boolean는 1byte 등)
+
+최신 ECMAScript 표준을 따르는 자바스크립트는 다음과 같은 7가지 데이터 타입(자료형)을 정의한다.
+
+- undefined
+- null
+- Boolean(불리언)
+- String(문자열)
+- Symbol(심볼)
+- Numeric(Number와 BigInt)
+- Object
+
+## 집합으로서의 타입
+
+타입은 값이 가질 수 있는 유효한 범위의 집합
+
+타입 시스템은 코드에서 사용되는 유효한 값의 범위를 제한해서 런타임에서 발생할 수 있는 유효하지 않은 값에 대한 에러를 방지해준다.
+
+<details>
+  <summary>예제</summary>
+
+```ts
+const num: number = 123;
+const str: string = "abc";
+
+function func(n: number) {
+  // ...
+}
+
+func(str); // Argument of type 'string' is not assignable to parameter of type 'number'
+```
+
+- func() 함수의 인자로 들어갈 수 있는 값을 number 타입의 집합으로 제한
+
+</details>
+
+## 정적 타입과 동적 타입
+
+타입을 결정하는 시점에 따라 타입을 `정적 타입`과 `동적 타입`으로 분류가 가능
+
+### 정적 타입 시스템
+
+- 모든 변수의 타입이 컴파일타임에 결정됨
+- C, Java, TypeScript
+- 컴파일타임에 타입 에러를 발견할 수 있기 때문에 프로그램의 안정성을 높임
+
+### 동적 타입 시스템
+
+- 변수 타입이 런타임에서 결정됨
+- Python, JavaScript
+- 직접 타입을 정의해줄 필요 X
+- 개발 과정에서는 에러 없이 작성 가능하지만 안정성이 떨어진다.
+  <details>
+  <summary>예제</summary>
+
+  ```ts
+  const multiplyByThree = (number) => number * 3;
+  multiplyByThree(10); // 30
+  multiplyByThree("F"); // NaN
+  ```
+
+  - 함수의 입력되는 변수가 string 타입이 들어가 예상치 못한 결과를 반환한다(NaN)
+  - 함수가 실행되기 전까지는 모른다!
+
+  </details>
+
+> **컴파일타임과 런타임**
+>
+> 컴파일 타임: 컴퓨터가 소스코드를 이해할 수 있도록 기계어로 변환되는 시점
+> 런타임: 변환된 파일이 메모리에 적재되어 실행되는 시점
+
+## 강타입과 약타입
+
+#### 암묵적 타입 변환
+
+- 개발자가 의도적으로 타입을 명시하거나 바꾸지 않았는데도 컴파일러 or 엔진 등에 의해서 런타임에 자동으로 변경되는 것
+
+[ 상황 ] 서로 다른 타입을 갖는 값끼리 연산을 시도하는 상황
+
+- 강타입: 컴파일러 or 인터프리터에서 에러 발생(Python, Ruby, TypeScript)
+- 약타입: 컴파일러 or 인터프리터가 내부적으로 판단하여 타입을 변환하여 연산을 수행한 후 값을 도출(Java, C++, JavaScript)
+
+<details>
+  <summary>예제</summary>
+
+#### c++
+
+```c++
+#include <iostream>
+using namespace std;
+int main() {
+  cout << '2' - 1;  // 49   '2'는 ASCII 값으로 50
+}
+```
+
+#### Java
+
+```java
+class Main {
+  public static void main(Stirng[] args) {
+    System.out.println('2' - 1);  // 49
+  }
+}
+```
+
+#### Python
+
+```python
+print('2' - 1);  # TypeError: unsupported operand type(s) for -: 'str' and 'int
+```
+
+#### Ruby
+
+```ruby
+puts "2" - 1  # 1
+```
+
+#### JavaScript
+
+```js
+console.log("2" - 1); // 1
+```
+
+#### TypeScript
+
+```ts
+console.log("2" - 1); // '2' error 타입 에러
+```
+
+암묵적 변환은 개발자가 명시적으로 타입을 변환하지 않아도 되는 편리함이 있지만 작성자의 의도와 다르게 동작할 수 있기 때문에 오류가 발생할 가능성이 높아진다.
+
+- 예시로 C++과 JavaScript에서의 결과값이 다르다는 것을 볼 수 있다.
+
+</details>
+
+### 타입 시스템
+
+- 타입 검사기가 프로그램에 타입을 할당하는 데 사용하는 규칙 집합
+- `어떤 타입을 사용하는지를 컴파일러에 명시적으로 알려줘야하는 부분`과 `자동으로 타입을 추론하는 부분`으로 나뉨
+- 즉, 개발자는 직접 타입을 명시하거나, 타입스크립트가 타입 추론하는 방식 중에서 선택 가능
+
+## 컴파일 방식
+
+### 컴파일?
+
+- 사람이 이해할 수 있는 방식으로 작성한 코드를 컴퓨터가 이해할 수 있는 기계어로 바꿔주는 과정
+- [EX] Java, C++ -> Binary Code(0, 1로 이루어진 이진 코드)
+
+타입스크립트는 자바스크립트의 타입 에러를 컴파일 타임에 미리 발견하기 위해 만들어졌기 때문에 `컴파일 시 타입 정보가 없는 순수 자바스크립트 코드`를 생성
+
+# 타입스크립트의 타입시스템
+
+## 타입 애너테이션(annotation) 방식
+
+- 변수나 상수 or 함수의 인자와 반환 값에 타입을 명시적으로 선언해서 어떤 타입 값이 저장될 것인지를 컴파일러에 직접 알려주는 문법
+
+  ```ts
+  let isDone: boolean = false;
+  let decimal: number = 6;
+  let color: string = "blue";
+  let list: number[] = [1, 2, 3];
+  let x: [string, number]; // tuple
+  ```
+
+## `구조적 타이핑`
+
+- 구조로 타입을 구분
+
+## `구조적 서브타이핑`
+
+## 자바스크립트를 닮은 타입스크립트
+
+## 구조적 타이핑의 결과
+
+## 타입스크립트의 점진적 타입 확인
+
+## 자바스크립트 슈퍼셋으로서의 타입스크립트
+
+## 값 vs 타입
+
+## 타입을 확인하는 방법
+
+# 원시 타입
+
+## boolean
+
+## undefined
+
+## null
+
+## number
+
+## bigInt
+
+## string
+
+## symbol
+
+# 객체 타입
+
+## object
+
+## {}
+
+## array
+
+## type과 interface 키워드
+
+<details>
+  <summary>우형에서는 type과 interface 키워드를 어떻게 사용할까??</summary>
+
+### Q. type과 interface 둘 중 주로 어떤 것을 사용하나요?
+
+- `결론: 정말 팀마다 다른 성격을 띄고 있다.`
+
+- 전역적으로 사용할 때는 interface, 작은 범위 내에서 한정적으로 사용할 때 type 사용
+- 정적으로 결정되는 것들은 type, 확장될 수 있는 basis 정의 or object 구성은 interface
+
+### Q. 팀 내에서 type이나 interface 만을 써야 하는 상황은?
+
+**Type**
+
+- 유니온 타입이나 교차 타입 등 type 정의에서만 쓸 수 있는 기능을 활용할 때 사용
+- computed value를 써야 했을 때 사용
+
+  - computed value란, `표현식(expression)을 이용해 객체의 key 값을 정의하는 ES6 문법`
+
+  ```ts
+  // 인터페이스는 사용 불가능
+  type UserColor = "red" | "green" | "blue";
+
+  type ColorPalette = {
+    [key in UserColor]: string;
+  };
+  // type ColorPalette = {
+  //  red: string;
+  //  green: string;
+  //  blue: string;
+  // }
+  ```
+
+**Interface**
+
+- 객체 지향적으로 코드를 짤 때, 상속하는 경우(extends, implements 사용)
+- 다른 컴포넌트들끼리 같은 속성을 공유하는 기준 interface를 정의하고 확장할 때 사용
+
+</details>
+
+## function
+
+자바스크립트에서는 함수도 일종의 객체로 간주하지만 `typeof` 연산자로 함수 타입을 출력해보면 `function`으로 분류된다
+
+#### 함수 시그니처(Call Signature)
+
+- 함수 타입을 정의할 때 사용하는 문법
+- 함수의 매개변수와 반환 값의 타입을 명시하는 역할
+<details>
+<summary>예제</summary>
+
+```ts
+type add = (a: number, b: number) => number;
+```
+
+- 타입스크립트에서 함수 자체의 타입을 명시할 때는 `화살표 함수 방식으로만 정의 가능`
+
+</details>
