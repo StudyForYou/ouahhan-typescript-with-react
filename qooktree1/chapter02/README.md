@@ -186,29 +186,135 @@ console.log("2" - 1); // '2' error 타입 에러
 
 # 원시 타입
 
+> `원시 타입과 원시 래퍼 객체`
+
+> 타입스크립트에서는 `원시 값`과 `원시 래퍼 객체`를 구분하여 사용함. 타입스크립트에서는 원시 값에 대응하는 타입을 소문자로 표기하며, 파스칼 표기법을 사용하면 해당 원시 값을 래핑하는 객체 타입을 의미
+
 ## boolean
+
+- true와 false 값만 할당할 수 있는 boolean 타입
 
 ## undefined
 
+- 정의되지 않았다는 의미의 타입, 오직 undefined 값만 할당 가능
+
 ## null
+
+- 오직 null만 할당 가능 -> undefined와 혼용 불가!
+  <details>
+    <summary>예제</summary>
+
+  ```ts
+  type Person1 = {
+    name: string;
+    job?: string;
+  };
+  type Person2 = {
+    name: string;
+    job: string | null;
+  };
+  ```
+
+  - Person1은 job이라는 속성이 있을 수도 or 없을 수도 있음을 나타냄
+  - Person2는 사람마다 갖고 있지만 값이 비어있을 수도 있다는 것을 나타냄
+
+  </details>
 
 ## number
 
+- 숫자, NaN이나, Infinity도 포함됨
+  - `NaN`: Not A Number의 줄임말로, 문자열을 숫자로 변환할 수 없는데 변환하려고 할 때 반환됨
+  - `Infinity`: 무한대를 나타내는 숫자형 값
+
 ## bigInt
+
+- ES2020에서 새롭게 도입된 데이터 타입으로 TS 3.2 version부터 사용 가능
+- 자바스크립트에서 가장 큰 수인 `Number.MAX_SAFE_INTEGER(2**53 - 1)`를 넘어가는 값의 처리를 하지 못함
+- bigInt를 사용하면 처리 가능
+
+```ts
+const bigNumber1: bigInt = BigInt(999999999999999);
+```
+
+- `number 타입과 bigint 타입은 엄연히 서로 다른 타입이므로 상호 작용 불가`
 
 ## string
 
+- 문자열을 할당할 수 있는 타입
+- 공백, 작은따옴표('), 큰따옴표("), 백틱(`) - 템플릿 리터럴 등이 있음
+
 ## symbol
+
+ES2015에서 도입된 데이터 타입으로 `Symbol()` 함수를 사용하면 어떤 값과도 중복되지 않는 유일한 값을 생성 가능
+
+```ts
+const MOVIE_TITLE = Symbol("title");
+const MUSIC_TITLE = Symbol("title");
+console.log(MOVIE_TITLE === MUSIC_TITLE); // false
+let SYMBOL: unique symbol = Symbol(); // A variable whose type is a 'unique' symbol' type must be 'const'
+```
+
+타입스크립트에는 `symbol 타입`과 const 선언에서만 사용할 수 있는 `unique symbol 타입`이라는 symbol의 하위 타입도 있음
 
 # 객체 타입
 
+원시 타입에 속하지 않는 값은 모두 객체 타입으로 분류 가능
+
 ## object
+
+`object 타입은 가급적 사용하지 말도록 권장됨`
+
+- 이유: any 타입과 유사하게 객체에 해당하는 모든 타입 값을 유동적으로 할당할 수 있어 정적 타이필의 의미가 퇴색됨
+
+다만 any와는 다르게 원시 타입에 해당하는 값은 object 타입에 속하지 않음
 
 ## {}
 
+- 중괄호 안에 객체의 속성 타입을 지정해주는 식으로 사용
+- 타이핑되는 객체가 중괄호 안에서 선언된 구조와 일치해야 한다는 것을 말함
+
+  ```ts
+  const cardData = {title: string; description: string} = {
+    title: "즐종시", description: "즐거운 종 시간"
+  }
+
+  ```
+
+- 빈 객체 타입을 지정하기 위해서는 `{}`보다는 `Record<string, never>` 처럼 사용하는 것이 바람직함
+  - [참고자료](https://db2dev.tistory.com/entry/TS-%EB%B9%88-%EA%B0%9D%EC%B2%B4%EC%97%90-%EB%8C%80%ED%95%9C-%EC%98%AC%EB%B0%94%EB%A5%B8-%ED%83%80%EC%9E%85)
+- 소문자로 된 타입스크립트 타입 체계를 사용하는 게 일반적
+  -> 사실 이 부분을 잘 이해하지 못했다.....
+
 ## array
 
+- 타입스크립트에서는 배열을 `array`라는 별도 타입을 다룸
+- 하나의 타입만 가질 수 있음
+- 원소의 개수는 타입에 영향을 주지 않음
+- `Array 키워드`로 선언하거나 `대괄호([])`를 사용해서 선언하는 방식이 있다.
+- 튜플 타입도 대괄호로 선언하여 배열 타입과 구분해서 사용하자!
+<details>
+  <summary>예제</summary>
+
+```ts
+// Type[] 과 Array<Type> 의 차이점 - 가독성, 여러 타입 사용시, readonly
+const x1: ComputedRef<Array<number>>; // 중첩시 혼란 야기 가능
+const y1: ComputedRef<number[]>; // 간결함
+
+const x2: Array<string | number> = [1, "a"]; // Array<Type>: 여러 타입 허용 가능
+const y2: string[] = ["a", "b"]; // Type[]: 여러 타입 허용 불가
+const z2: [string, number] = [1, "a"]; // 이런 식으로 사용 가능하지만 이건 튜플이다
+
+const x3: ReadonlyArray<number>; // ReadonlyArray 활용 가능
+const y3: readonly number[]; // readonly 추가
+```
+
+- [참고자료](https://dev.to/rahulrajrd/array-vs-type-vs-type-in-typescript-5g1h)
+
+</details>
+
 ## type과 interface 키워드
+
+- 객체 타입을 type or interface 키워드를 사용해 선언하면 반복저그올 사용 가능하고 중복 없이 해당 타입을 쓸 수 있다.
 
 <details>
   <summary>우형에서는 type과 interface 키워드를 어떻게 사용할까??</summary>
