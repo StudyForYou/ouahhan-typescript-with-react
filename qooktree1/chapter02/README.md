@@ -168,47 +168,365 @@ console.log("2" - 1); // '2' error 타입 에러
 
 ## `구조적 타이핑`
 
-- 구조로 타입을 구분
+### 타입 시스템
+
+- 명목적 타입 시스템 & 구조적 타입 시스템으로 나뉨
+- 명목적 타입 시스템
+  - 타입의 이름을 통해 구분
+  - 대표적으로 Java
+  - class의 구조가 같더라도 이름이 다르면 다른 타입으로 간주
+- 구조적 타입 시스템
+  - 객체가 가지고 있는 속성을 바탕으로 타입을 구분
+  - 동일한 구조를 가지고 있다면 동일한 타입으로 간주
 
 ## `구조적 서브타이핑`
 
+- 객체가 가지고 있는 속성을 바탕으로 타입을 구분하고 좀 더 타입 간의 관계에 중점을 두는 타입 시스템을 말함
+
+  <details>
+    <summary>예제</summary>
+
+  ```ts
+  interface Pet {
+    name: string;
+  }
+
+  interface Cat {
+    name: string;
+    age: number;
+  }
+
+  let pet: Pet;
+  let cat: Cat = { name: "Zag", age: 2 };
+
+  pet = cat;
+  ```
+
+  - Cat 타입으로 선언한 cat을 Pet 타입으로 선언한 pet에 할당 가능
+  - 타입 호환성에 더 많은 유연성을 허용
+
+  </details>
+
 ## 자바스크립트를 닮은 타입스크립트
+
+명목적 타이핑은 타입의 동일성을 확인하는 과정에서 구조적 타이핑에 비해 조금 더 안전
+
+### 타입스크립트는 왜 구조적 타이핑을 채택했을까?
+
+- 타입스크랩트는 자바스크립트를 모델링한 언어
+- 자바스크립트는 `덕 타이핑 기반`
+  <details>
+    <summary>덕 타이핑</summary>
+
+  - 어떤 타입에 부합하는 변수와 method를 가질 경우 해당 타입에 속하는 것으로 간주하는 방식
+
+  </details>
+
+- 객체 간 속성이 동일하다면 서로 호환되는 구조적 타입 시스템을 제공하여 더욱 편리성을 높임
+
+### 덕타이핑과 구조적 타이핑의 차이점은 뭘까?
+
+- 코드로 보면 차이가 없어 보임(두 방식 모두 객체가 가진 속성을 기반으로 타입을 검사)
+- 덕 타이핑은 런타임에 검사, 구조적 타이핑은 컴파일타임에 타입체커가 검사
+- 덕 타이핑은 주로 동적 타이핑에서 사용됨
+- 구조적 타이핑은 주로 정적 타이핑에서 사용됨
 
 ## 구조적 타이핑의 결과
 
+구조적 타이핑은 유연성을 챙기긴 했지만, 대신에 정적 타입의 정확성을 100% 보장해주지 않음
+
+<details>
+  <summary>예제</summary>
+
+```ts
+interface Cube {
+  width: number;
+  height: number;
+  depth: number;
+}
+
+function addLines(c: Cube) {
+  let total = 0;
+
+  for (const axis of Object.keys(c)) {
+    // 🚨 Element implicitly has an 'any' type
+    // because expression of type 'string' can't be used to index type 'Cube'.
+    // 🚨 No index signature with a parameter of type 'string'
+    // was found on type 'Cube'
+    const length = c[axis];
+
+    total += length;
+  }
+}
+```
+
+- Cube 인터페이스의 모든 필드는 number 타입을 가지지만, c에 들어올 객체는 Cube의 width, height, depth 외에도 어떤 속성이든 가질 수 있기 때문에 c[axis]의 타입이 string일 수도 있어 에러가 발생
+- 이런 한계를 극복하고자 타입스크립트에 명목적 타이핑 언어의 특징을 가미한 식별할 수 있는 `유니온` 같은 방법이 생겨남
+</details>
+
 ## 타입스크립트의 점진적 타입 확인
+
+### 점진적 타입 검사?
+
+- 컴파일 타임에 타입을 검사하면서 필요에 따라 타입 선언 생략을 허용하는 방식
+- 타입을 지정한 변수와 표현식은 정적으로 타입 검사, 타입 선언이 생략되면 동적으로 검사를 수행
+
+JS코드를 TS코드로 마이그레이션 할 때, 점진적 타이핑이라는 특징을 유용하게 활용 가능
+
+> any 타입
+
+> 타입스크립트 내 모든 타입의 종류를 포함하는 가장 상위 타입
+> TS 컴파일 옵션인 noImplicitAny 값이 true일때는 에러가 발생
+> TS로 코드를 작성할 때는 정확한 타이핑을 위해 tsconfig의 noImplicitAny 옵션을 true로 설정하는 게 좋음
 
 ## 자바스크립트 슈퍼셋으로서의 타입스크립트
 
+- TS 문법은 모든 JS 문법을 포함
+
 ## 값 vs 타입
+
+- 값과 타입은 TS에서 별도의 네임스페이스에 존재
+- 값 공간과 타입 공간의 이름은 서로 충돌하지 않으며, 변수를 같은 이름으로 정의 가능
+- 값과 타입 공간에 동시에 존재하는 심볼도 있음
+  - `Class`와 `enum`
+  - 클래스는 타입으로도 사용 가능
+  - enum 역시 런타임에 객체로 변환되는 값
+
+> **트리쉐이킹(tree - shaking)**
+
+> JS, TS 에서 사용하지 않는 코드를 삭제하는 방식
+> ES6 이후의 개발 환경에서는 Webpack, Rollup 같은 모듈 번들러를 사용하는데, 번들링 작업을 수행할 때 사용하지 않는 코드는 자동으로 삭제됨
 
 ## 타입을 확인하는 방법
 
+### 1. typeof
+
+- 연산하기 전에 피연산자의 데이터 타입을 나타냄(Boolean, null, undefined, Number, BigInt, String, Symbol, Function, object)
+- **값에 쓰일 때(JS)**: 자바스크립트 런타임의 typeof 연산자가 됨
+- **타입에서 쓰일 때(TS)**: 값을 읽고 타입스크립트 타입을 반환
+  <details>
+        <summary>예제</summary>
+
+  ```ts
+  interface Person {
+    first: string;
+    last: string;
+  }
+
+  const person = (Person = { first: "zig", last: "song" });
+  function email(options: { person: Person; subject: string; body: string }) {}
+
+  const v1 = typeof person; // 값은 'object'
+  const v2 = typeof email; // 값은 'function'
+  type T1 = typeof person; // 타입은 Person
+  type T2 = typeof email; // 타입은 (options: {person: Person; subject: string; body: string}) => void
+  ```
+
+  </details>
+
+### 2. instanceof
+
+- 객체가 특정 클래스나 생성자 함수의 인스턴스인지 여부를 확인하는 데 사용됨
+
+  <details>
+    <summary>예제</summary>
+
+  ```ts
+  let error: unknown;
+
+  if (error instanceof Error) {
+    // 이 블록 내에서 error는 Error 타입으로 정제되어 사용된다.
+    showAlertModal(error.message); // // 안전하게 Error 클래스의 메소드를 사용할 수 있음
+  } else {
+    // error가 Error 타입이 아닌 경우의 처리
+    throw Error(error);
+  }
+  ```
+
+  </details>
+
+### 3. 타입 단언
+
+- 개발자가 해당 값의 타입을 더 잘 파악할 수 있을 때 사용
+- `as` 키워드 사용(강제 형 변환과 유사)
+
+  <details>
+        <summary>예제</summary>
+
+  ```ts
+  const loadedText: unknown;
+
+  const validateInputText = (text: string) => {
+    if (text.length < 10) return '최소 10글자 이상 입력해야 합니다.');
+    return '정상 입력된 값입니다.';
+  }
+
+  validateInputText(loadedText as string);  // 단언하지 않으면 컴파일 단계에서 오류 발생
+  ```
+
+  </details>
+
+### 4. 타입 가드
+
+- 특정 조건을 검사해서 타입을 정제하고 타입 안정성을 높이는 패턴
+  <details>
+      <summary>예제</summary>
+
+  ```ts
+  interface Foo {
+    type: "foo"; // 리터럴 타입
+    foo: number;
+  }
+  interface Bar {
+    type: "bar"; // 리터럴 타입
+    bar: number;
+  }
+
+  function doStuff(arg: Foo | Bar) {
+    if (arg.type === "foo") {
+      console.log(arg.foo); // Good!
+      console.log(arg.bar); // Error!
+    } else {
+      // 백퍼 Bar겠군.
+      console.log(arg.foo); // Error!
+      console.log(arg.bar); // Good!
+    }
+  }
+  ```
+
+</details>
+
 # 원시 타입
+
+> `원시 타입과 원시 래퍼 객체`
+
+> 타입스크립트에서는 `원시 값`과 `원시 래퍼 객체`를 구분하여 사용함. 타입스크립트에서는 원시 값에 대응하는 타입을 소문자로 표기하며, 파스칼 표기법을 사용하면 해당 원시 값을 래핑하는 객체 타입을 의미
 
 ## boolean
 
+- true와 false 값만 할당할 수 있는 boolean 타입
+
 ## undefined
+
+- 정의되지 않았다는 의미의 타입, 오직 undefined 값만 할당 가능
 
 ## null
 
+- 오직 null만 할당 가능 -> undefined와 혼용 불가!
+  <details>
+    <summary>예제</summary>
+
+  ```ts
+  type Person1 = {
+    name: string;
+    job?: string;
+  };
+  type Person2 = {
+    name: string;
+    job: string | null;
+  };
+  ```
+
+- Person1은 job이라는 속성이 있을 수도 or 없을 수도 있음을 나타냄
+- Person2는 사람마다 갖고 있지만 값이 비어있을 수도 있다는 것을 나타냄
+
+  </details>
+
 ## number
+
+- 숫자, NaN이나, Infinity도 포함됨
+  - `NaN`: Not A Number의 줄임말로, 문자열을 숫자로 변환할 수 없는데 변환하려고 할 때 반환됨
+  - `Infinity`: 무한대를 나타내는 숫자형 값
 
 ## bigInt
 
+- ES2020에서 새롭게 도입된 데이터 타입으로 TS 3.2 version부터 사용 가능
+- 자바스크립트에서 가장 큰 수인 `Number.MAX_SAFE_INTEGER(2**53 - 1)`를 넘어가는 값의 처리를 하지 못함
+- bigInt를 사용하면 처리 가능
+
+```ts
+const bigNumber1: bigInt = BigInt(999999999999999);
+```
+
+- `number 타입과 bigint 타입은 엄연히 서로 다른 타입이므로 상호 작용 불가`
+
 ## string
+
+- 문자열을 할당할 수 있는 타입
+- 공백, 작은따옴표('), 큰따옴표("), 백틱(`) - 템플릿 리터럴 등이 있음
 
 ## symbol
 
+ES2015에서 도입된 데이터 타입으로 `Symbol()` 함수를 사용하면 어떤 값과도 중복되지 않는 유일한 값을 생성 가능
+
+```ts
+const MOVIE_TITLE = Symbol("title");
+const MUSIC_TITLE = Symbol("title");
+console.log(MOVIE_TITLE === MUSIC_TITLE); // false
+let SYMBOL: unique symbol = Symbol(); // A variable whose type is a 'unique' symbol' type must be 'const'
+```
+
+타입스크립트에는 `symbol 타입`과 const 선언에서만 사용할 수 있는 `unique symbol 타입`이라는 symbol의 하위 타입도 있음
+
 # 객체 타입
+
+원시 타입에 속하지 않는 값은 모두 객체 타입으로 분류 가능
 
 ## object
 
+`object 타입은 가급적 사용하지 말도록 권장됨`
+
+- 이유: any 타입과 유사하게 객체에 해당하는 모든 타입 값을 유동적으로 할당할 수 있어 정적 타이필의 의미가 퇴색됨
+
+다만 any와는 다르게 원시 타입에 해당하는 값은 object 타입에 속하지 않음
+
 ## {}
+
+- 중괄호 안에 객체의 속성 타입을 지정해주는 식으로 사용
+- 타이핑되는 객체가 중괄호 안에서 선언된 구조와 일치해야 한다는 것을 말함
+
+  ```ts
+  const cardData = {title: string; description: string} = {
+    title: "즐종시", description: "즐거운 종 시간"
+  }
+
+  ```
+
+- 빈 객체 타입을 지정하기 위해서는 `{}`보다는 `Record<string, never>` 처럼 사용하는 것이 바람직함
+  - [참고자료](https://db2dev.tistory.com/entry/TS-%EB%B9%88-%EA%B0%9D%EC%B2%B4%EC%97%90-%EB%8C%80%ED%95%9C-%EC%98%AC%EB%B0%94%EB%A5%B8-%ED%83%80%EC%9E%85)
+- 소문자로 된 타입스크립트 타입 체계를 사용하는 게 일반적
+  -> 사실 이 부분을 잘 이해하지 못했다.....
 
 ## array
 
+- 타입스크립트에서는 배열을 `array`라는 별도 타입을 다룸
+- 하나의 타입만 가질 수 있음
+- 원소의 개수는 타입에 영향을 주지 않음
+- `Array 키워드`로 선언하거나 `대괄호([])`를 사용해서 선언하는 방식이 있다.
+- 튜플 타입도 대괄호로 선언하여 배열 타입과 구분해서 사용하자!
+<details>
+  <summary>예제</summary>
+
+```ts
+// Type[] 과 Array<Type> 의 차이점 - 가독성, 여러 타입 사용시, readonly
+const x1: ComputedRef<Array<number>>; // 중첩시 혼란 야기 가능
+const y1: ComputedRef<number[]>; // 간결함
+
+const x2: Array<string | number> = [1, "a"]; // Array<Type>: 여러 타입 허용 가능
+const y2: string[] = ["a", "b"]; // Type[]: 여러 타입 허용 불가
+const z2: [string, number] = [1, "a"]; // 이런 식으로 사용 가능하지만 이건 튜플이다
+
+const x3: ReadonlyArray<number>; // ReadonlyArray 활용 가능
+const y3: readonly number[]; // readonly 추가
+```
+
+- [참고자료](https://dev.to/rahulrajrd/array-vs-type-vs-type-in-typescript-5g1h)
+
+</details>
+
 ## type과 interface 키워드
+
+- 객체 타입을 type or interface 키워드를 사용해 선언하면 반복저그올 사용 가능하고 중복 없이 해당 타입을 쓸 수 있다.
 
 <details>
   <summary>우형에서는 type과 interface 키워드를 어떻게 사용할까??</summary>
@@ -268,3 +586,4 @@ type add = (a: number, b: number) => number;
 - 타입스크립트에서 함수 자체의 타입을 명시할 때는 `화살표 함수 방식으로만 정의 가능`
 
 </details>
+````
