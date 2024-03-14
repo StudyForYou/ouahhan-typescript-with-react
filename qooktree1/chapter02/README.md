@@ -465,7 +465,7 @@ TS에는 `symbol 타입`과 const 선언에서만 사용할 수 있는 `unique s
 
 `object 타입은 가급적 사용하지 말도록 권장됨`
 
-- 이유: any 타입과 유사하게 객체에 해당하는 모든 타입 값을 유동적으로 할당할 수 있어 정적 타이필의 의미가 퇴색됨
+- 이유: any 타입과 유사하게 객체에 해당하는 모든 타입 값을 유동적으로 할당할 수 있어 정적 타이핑의 의미가 퇴색됨
 
 다만 any와는 다르게 원시 타입에 해당하는 값은 object 타입에 속하지 않음
 
@@ -484,7 +484,6 @@ TS에는 `symbol 타입`과 const 선언에서만 사용할 수 있는 `unique s
 - 빈 객체 타입을 지정하기 위해서는 `{}`보다는 `Record<string, never>` 처럼 사용하는 것이 바람직함
   - [참고자료](https://db2dev.tistory.com/entry/TS-%EB%B9%88-%EA%B0%9D%EC%B2%B4%EC%97%90-%EB%8C%80%ED%95%9C-%EC%98%AC%EB%B0%94%EB%A5%B8-%ED%83%80%EC%9E%85)
 - 소문자로 된 TS 타입 체계를 사용하는 게 일반적
-  -> 사실 이 부분을 잘 이해하지 못했다.....
 
 ## 📝 array
 
@@ -515,7 +514,7 @@ const y3: readonly number[]; // readonly 추가
 
 ## 📝 type과 interface 키워드
 
-- 객체 타입을 type or interface 키워드를 사용해 선언하면 반복저그올 사용 가능하고 중복 없이 해당 타입을 쓸 수 있다.
+- 객체 타입을 type or interface 키워드를 사용해 선언하면 반복적으로 사용 가능하고 중복 없이 해당 타입을 쓸 수 있다.
 
 <details>
   <summary>💬 우형에서는 type과 interface 키워드를 어떻게 사용할까??</summary>
