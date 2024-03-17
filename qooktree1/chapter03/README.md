@@ -13,40 +13,30 @@
 ### 어떤 값을 받아올지 or 넘겨줄지 정할 수 없을 때
 
 - API 요청/응답 처리, 콜백 함수 전달, 외부 라이브러리 등을 사용할 때는 어떤 인자를 주고받을지 특정하기 힘듦
-<details>
-    <summary>🔍️ 예제</summary>
 
-```ts
-type FeedbackModalParams = {
-  show: boolean;
-  content: string;
-  cancelButtonText?: string;
-  confirmButtonText?: string;
-  beforeOnClose?: () => void;
-  action?: any;
-};
-```
+  ```ts
+  type FeedbackModalParams = {
+    show: boolean;
+    content: string;
+    cancelButtonText?: string;
+    confirmButtonText?: string;
+    beforeOnClose?: () => void;
+    action?: any;
+  };
+  ```
 
 - 주고받을 값이 명확하지 않을 때 열린 타입(any)을 선언해야 할 수 있음
-
-</details>
 
 ### 값을 예측할 수 없을 때 암묵적으로 사용
 
 - 외부 라이브러리나 웹 API의 요청에 따라 다양한 값을 반환하는 API가 존재할 수 있음
-
-<details>
-    <summary>🔍️ 예제</summary>
-
-```ts
-async function load() {
-  const res = await fetch("https://api.com");
-  const data = await res.json(); // response.json()의 return type은 Promise<any>로 정의되어 있음
-  return data;
-}
-```
-
-</details>
+  ```ts
+  async function load() {
+    const res = await fetch("https://api.com");
+    const data = await res.json(); // response.json()의 return type은 Promise<any>로 정의되어 있음
+    return data;
+  }
+  ```
 
 ## 📝 unknown type
 
@@ -92,16 +82,12 @@ async function load() {
 
 - throw keyword를 사용하면 에러를 발생시킬 수 있음 -> 값을 반환하는 것으로 간주 X
 - 특성 함수가 실행 중 마지막에 `에러를 던지는 작업을 수행하면 반환 타입은 never`
-  <details>
-    <summary>🔍️ 예제</summary>
 
   ```ts
   function generateError(res: Response): never {
     throw new Error(res.getMessage());
   }
   ```
-
-  </details>
 
 #### 무한히 함수가 실행되는 경우
 
@@ -130,10 +116,8 @@ async function load() {
   let tuple: [number, string, boolean] = [1, "string", true]; // 여러 Types 혼용 가능
   ```
 
-<details>
-  <summary>🔍️ 예제</summary>
-  
 - useState는 튜플 타입을 반환
+
   ```ts
   // 첫 번째와 두 번째의 타입이 다름. 두 번째는 setter 함수
   const [num, setNum] = useState(null);
@@ -156,13 +140,10 @@ async function load() {
   const optionalTuple1: [number, number, number?] = [1, 2];
   const optionalTuple2: [number, number, number?] = [1, 2, 3];
   ```
-  </details>
 
 ## 📝 enum type
 
 - 일종의 구조체를 만드는 타입 시스템
-<details>
-  <summary>🔍️ 예제</summary>
 
 - 누락된 멤버는 이전 멤버 값의 숫자를 기준으로 1씩 늘려가며 자동 할당
 
@@ -182,8 +163,6 @@ async function load() {
   // 역방향 접근 가능
   ProgrammingLanguage[400]; // TypeScript
   ```
-
-</details>
 
 ### enum의 왜 쓸까?
 
