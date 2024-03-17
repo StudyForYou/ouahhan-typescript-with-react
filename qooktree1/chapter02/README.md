@@ -16,9 +16,6 @@
 
 타입 시스템은 코드에서 사용되는 유효한 값의 범위를 제한해서 런타임에서 발생할 수 있는 유효하지 않은 값에 대한 에러를 방지해준다.
 
-<details>
-  <summary>🔍️ 예제</summary>
-
 ```ts
 const num: number = 123;
 const str: string = "abc";
@@ -31,8 +28,6 @@ func(str); // Argument of type 'string' is not assignable to parameter of type '
 ```
 
 - func() 함수의 인자로 들어갈 수 있는 값을 number 타입의 집합으로 제한
-
-</details>
 
 ## 📝 정적 타입과 동적 타입
 
@@ -51,9 +46,6 @@ func(str); // Argument of type 'string' is not assignable to parameter of type '
 - 직접 타입을 정의해줄 필요 X
 - 개발 과정에서는 에러 없이 작성 가능하지만 안정성이 떨어진다.
 
-<details>
-  <summary>🔍️ 예제</summary>
-
 ```ts
 const multiplyByThree = (number) => number * 3;
 multiplyByThree(10); // 30
@@ -62,8 +54,6 @@ multiplyByThree("F"); // NaN
 
 - 함수의 입력되는 변수가 string 타입이 들어가 예상치 못한 결과를 반환한다(NaN)
 - 함수가 실행되기 전까지는 모른다!
-
-</details>
 
 <details>
   <summary>💡 컴파일타임과 런타임</summary>
@@ -163,9 +153,6 @@ TS는 JS의 타입 에러를 컴파일 타임에 미리 발견하기 위해 만�
 
 - 객체가 가지고 있는 속성을 바탕으로 타입을 구분하고 좀 더 타입 간의 관계에 중점을 두는 타입 시스템을 말함
 
-<details>
-  <summary>🔍️ 예제</summary>
-
 ```ts
 interface Pet {
   name: string;
@@ -184,8 +171,6 @@ pet = cat;
 
 - Cat 타입으로 선언한 cat을 Pet 타입으로 선언한 pet에 할당 가능
 - 타입 호환성에 더 많은 유연성을 허용
-
-</details>
 
 ## 📝 JS를 닮은 TS
 
@@ -215,9 +200,6 @@ pet = cat;
 
 구조적 타이핑은 유연성을 챙기긴 했지만, 대신에 정적 타입의 정확성을 100% 보장해주지 않음
 
-<details>
-  <summary>🔍️ 예제</summary>
-
 ```ts
 interface Cube {
   width: number;
@@ -242,7 +224,6 @@ function addLines(c: Cube) {
 
 - Cube 인터페이스의 모든 필드는 number 타입을 가지지만, c에 들어올 객체는 Cube의 width, height, depth 외에도 어떤 속성이든 가질 수 있기 때문에 c[axis]의 타입이 string일 수도 있어 에러가 발생
 - 이런 한계를 극복하고자 TS에 명목적 타이핑 언어의 특징을 가미한 식별할 수 있는 `유니온` 같은 방법이 생겨남
-</details>
 
 ## 📝 TS의 점진적 타입 확인
 
@@ -291,9 +272,6 @@ JS코드를 TS코드로 마이그레이션 할 때, 점진적 타이핑이라는
 - **값에 쓰일 때(JS)**: JS 런타임의 typeof 연산자가 됨
 - **타입에서 쓰일 때(TS)**: 값을 읽고 TS 타입을 반환
 
-<details>
-  <summary>🔍️ 예제</summary>
-
 ```ts
 interface Person {
   first: string;
@@ -309,14 +287,9 @@ type T1 = typeof person; // 타입은 Person
 type T2 = typeof email; // 타입은 (options: {person: Person; subject: string; body: string}) => void
 ```
 
-</details>
-
 ### 2. instanceof
 
 - 객체가 특정 클래스나 생성자 함수의 인스턴스인지 여부를 확인하는 데 사용됨
-
-<details>
-  <summary>🔍️ 예제</summary>
 
 ```ts
 let error: unknown;
@@ -330,15 +303,10 @@ if (error instanceof Error) {
 }
 ```
 
-</details>
-
 ### 3. 타입 단언
 
 - 개발자가 해당 값의 타입을 더 잘 파악할 수 있을 때 사용
 - `as` 키워드 사용(강제 형 변환과 유사)
-
-<details>
-  <summary>🔍️ 예제</summary>
 
 ```ts
 const loadedText: unknown;
@@ -351,14 +319,9 @@ const validateInputText = (text: string) => {
 validateInputText(loadedText as string);  // 단언하지 않으면 컴파일 단계에서 오류 발생
 ```
 
-</details>
-
 ### 4. 타입 가드
 
 - 특정 조건을 검사해서 타입을 정제하고 타입 안정성을 높이는 패턴
-
-<details>
-  <summary>🔍️ 예제</summary>
 
 ```ts
 interface Foo {
@@ -382,8 +345,6 @@ function doStuff(arg: Foo | Bar) {
 }
 ```
 
-</details>
-
 # 원시 타입
 
 > `원시 타입과 원시 래퍼 객체`
@@ -402,9 +363,6 @@ function doStuff(arg: Foo | Bar) {
 
 - 오직 null만 할당 가능 -> undefined와 혼용 불가!
 
-<details>
-  <summary>🔍️ 예제</summary>
-
 ```ts
 type Person1 = {
   name: string;
@@ -418,8 +376,6 @@ type Person2 = {
 
 - Person1은 job이라는 속성이 있을 수도 or 없을 수도 있음을 나타냄
 - Person2는 사람마다 갖고 있지만 값이 비어있을 수도 있다는 것을 나타냄
-
-</details>
 
 ## 📝 number
 
@@ -492,8 +448,6 @@ TS에는 `symbol 타입`과 const 선언에서만 사용할 수 있는 `unique s
 - 원소의 개수는 타입에 영향을 주지 않음
 - `Array 키워드`로 선언하거나 `대괄호([])`를 사용해서 선언하는 방식이 있다.
 - 튜플 타입도 대괄호로 선언하여 배열 타입과 구분해서 사용하자!
-<details>
-  <summary>🔍️ 예제</summary>
 
 ```ts
 // Type[] 과 Array<Type> 의 차이점 - 가독성, 여러 타입 사용시, readonly
@@ -509,8 +463,6 @@ const y3: readonly number[]; // readonly 추가
 ```
 
 - [참고자료](https://dev.to/rahulrajrd/array-vs-type-vs-type-in-typescript-5g1h)
-
-</details>
 
 ## 📝 type과 interface 키워드
 
@@ -564,13 +516,9 @@ JS에서는 함수도 일종의 객체로 간주하지만 `typeof` 연산자로 
 
 - 함수 타입을 정의할 때 사용하는 문법
 - 함수의 매개변수와 반환 값의 타입을 명시하는 역할
-<details>
-  <summary>🔍️ 예제</summary>
 
 ```ts
 type add = (a: number, b: number) => number;
 ```
 
 - TS에서 함수 자체의 타입을 명시할 때는 `화살표 함수 방식으로만 정의 가능`
-
-</details>
