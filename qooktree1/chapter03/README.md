@@ -491,20 +491,66 @@ function exampleFucn2<T extends TypeWithLength>(arg: T): number {
 
 ## 📝 함수의 제네릭
 
-## 📝 호출 시그니처의 제네릭
+- 함수의 매개변수나 반환 값에 다양한 타입을 넣고 싶을 때 제네릭을 사용 가능
+
+  ```ts
+  function ReadOnlyRepository<T>(
+    target: ObjectType<T> | EntitySchema<T> | string
+  ): Repository<T> {
+    return getConnection("ro").getRepository(target);
+  }
+  ```
+
+## 📝 호출(타입) 시그니처의 제네릭
+
+- 함수 타입을 지정하는 문법으로 매개변수와 반환 타입을 미리 선언하여 타입을 정의하는 것
+
+  ```ts
+  type LogFn = (text: string) => void;
+  let log: LogFn = (text) => console.log(text);
+  ```
 
 ## 📝 제네릭 클래스
 
+- 외부에서 입력된 타입을 클래스 내부에 적용할 수 있는 클래스
+- 설명중.......
+
 ## 📝 제한된 제네릭
+
+- 타입 매개변수에 대한 제약 조건을 설정하는 기능
+
+  ```ts
+  type Fruit = {
+    name: string;
+    price: number;
+  };
+
+  function sellFruit<T extends Fruit>(obj: T, key: keyof T): void {
+    console.log(obj[key]);
+  }
+
+  // 제한된 제네릭으로 상속받은 Fruit 타입과 유사한 타입의 값을 넘겨받을 경우 컴파일 에러가 발생 X
+  sellFruit({ name: "banana", price: 1000 }, "name"); // banana
+  sellFruit({ name: "apple", price: 2000, color: "red" }, "name"); // apple
+
+  sellFruit({ name: "kiwi", color: "green" }, "name"); // Error 발생
+  ```
+
+  - sellFruit 타입 매개변수 T는 Fruit라는 타입으로 제약 조건이 설정되어 있다. 이처럼 타입 매개변수가 특정 타입에 묶여 있을 때 해당 키를 `바운드 타입 매개변수`라 부른다.
+  - 상속된 Fruit는 T의 `상한 한계`라고 부른다.
 
 ## 📝 확장된 제네릭
 
+- 제네릭 타입은 여러 타입을 상속받을 수 있으며 타입 매개변수를 여러 개 둘 수 있다.
+
+  ```ts
+  // 이런 식으로 타입을 제약해버리면 제네릭의 유연성을 읽어버린다.
+  <Key extends string>
+
+  // 타입 매개변수에 유니온 타입을 상속할 수 있다.
+  <Key extends string | number>
+  ```
+
 ## 📝 제네릭 예시
 
-```
-
-```
-
-```
-
-```
+- 설명중.......
