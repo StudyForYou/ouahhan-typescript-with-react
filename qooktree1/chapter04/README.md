@@ -93,6 +93,57 @@ const filter: Filter = {
     4. number이면서 boolean 인 경우
   - 두 타입을 모두 만족해야 하기 때문에 Universal의 타입은 number가 된다.
 
+### ✏️ extends와 교차 타입
+
+- extends 키워드를 사용한 타입이 교차 타입과 100% 상응하지 않는다!
+
+```ts
+interface DeliveryTip {
+  tip: number;
+}
+
+interface Filter extends DeliveryTip {
+  tip: string;
+  // Interface 'Filter' incorrectly extends interface 'DeliveryTip'
+  // Types of property 'tip' are incompatible
+  // Type 'string' is not assignable to type 'number'
+}
+
+type DeliveryTip2 = { tip: number };
+type Filter2 = DeliveryTip2 & { tip: string }; // tip은 never 속성 타입
+```
+
+- interface와 extends를 이용하는 경우 속성 간의 타입 호환이 되지 않는 경우 에러를 일으키지만, type과 교차 타입을 이용하는 경우에는 속성 간의 타입이 호환되지 않는 경우 never 타입으로 설정된다.
+- type 키워드는 교차 타입으로 선언되었을 때 새롭게 추가되는 속성에 대해 미리 알 수 없기 때문에 선언시 에러가 발생하지 않는다.
+
+### ✏️ 배달의민족 메뉴 시스템에 타입 확장 적용하기
+
+```ts
+// 1. 하나의 타입에 여러 속성을 추가할 때
+interface Menu {
+  name: string;
+  image: string;
+  gif?: string;
+  text?: string;
+}
+
+// 2. 타입을 확장하는 방법
+interface Menu2 {
+  name: string;
+  image: string;
+}
+
+interface SpecialMenu extends Menu {
+  gif: string;
+}
+interface PackageMenu extends Menu {
+  text: string;
+}
+```
+
+- 다양한 상태를 수용하기 위해 optional로 선언하면, 정작 타입이 꼭 필요한 곳에서 데이터가 없어 오류를 발생시킬 수 있다.
+- 적절한 네이밍을 사용해서 타입의 의도를 명확히 표현 가능하고, 코드 작성 단계에서 예기치 못한 버그도 예방 가능하다.
+
 ## 📝 타입 좁히기 - 타입 가드
 
 ## 📝 타입 좁히기 - 식별할 수 있는 유니온(Discriminated Unions)
