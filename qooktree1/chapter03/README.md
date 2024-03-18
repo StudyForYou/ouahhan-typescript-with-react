@@ -513,7 +513,36 @@ function exampleFucn2<T extends TypeWithLength>(arg: T): number {
 ## 📝 제네릭 클래스
 
 - 외부에서 입력된 타입을 클래스 내부에 적용할 수 있는 클래스
-- 설명중.......
+
+  ```ts
+  class Pair<T, U> {
+    private first: T;
+    private second: U;
+
+    constructor(first: T, second: U) {
+      this.first = first;
+      this.second = second;
+    }
+
+    getFirst(): T {
+      return this.first;
+    }
+
+    getSecond(): T {
+      return this.second;
+    }
+  }
+
+  // Pair 클래스의 인스턴스 생성
+  const numberAndStringPair = new Pair<number, string>(10, "Hello");
+
+  // 값 확인
+  console.log(numberAndStringPair.getFirst()); // 출력: 10
+  console.log(numberAndStringPair.getSecond()); // 출력: Hello
+  ```
+
+  - 제네릭 타입 매개변수들은 클래스가 사용될 때 실제 타입으로 대체된다.
+  - `클래스 전체`에 걸쳐 타입 매개변수가 적용된다.
 
 ## 📝 제한된 제네릭
 
@@ -554,3 +583,72 @@ function exampleFucn2<T extends TypeWithLength>(arg: T): number {
 ## 📝 제네릭 예시
 
 - 설명중.......
+
+### 제네릭을 사용하지 않아도 되는 경우
+
+#### 1. 제네릭을 굳이 사용하지 않아도 되는 타입
+
+```ts
+type Gtype<T> = T; // 타입 매개변수를 그대로 선언하는 것과 같은 기능을 한다.
+type RequirementType = "USE" | "UN_USE" | "NON_SELECT";
+interface Order {
+  gerRequirement(): Gtype<RequirementType>;
+}
+```
+
+```ts
+// 위의 코드를 다음과 같이 가독성 좋게 변경 가능하다.
+type RequirementType = "USE" | "UN_USE" | "NON_SELECT";
+interface Order {
+  gerRequirement(): RequirementType;
+}
+```
+
+#### 2. any 사용하기
+
+- any 타입은 사실상 JS와 동일한 방식으로 코드를 작성하는 것과 같다. 따라서 any를 사용하면 제네릭을 포함헤 타입을 지정하는 의미가 사라진다.
+
+```ts
+type ReturnType<T = any> {
+    //...
+}
+```
+
+#### 3. 가독성을 고려하지 않은 사용
+
+- 과도한 제네릭은 가독성을 해친다.
+- 복잡한 제네릭은 `의미 단위로 분할`해서 사용하는 것이 좋다.
+
+```ts
+// 1. 가독성이 매우 떨어진다.
+ReturnType<
+  Record<
+    OrderType,
+    Partial<
+      Record<
+        CommonOrderStatus | CommonReturnStatus,
+        Partial<Record<OrderRoleType, string[]>>
+      >
+    >
+  >
+>;
+
+// 2. 의미 단위로 분할
+type CommonStatus = CommonOrderStatus | CommonReturnStatus;
+
+type PartialOrderRole = Partial<Record<OrderRoleType, string[]>>;
+
+type RecordCommonOrder = Record<CommonStatus, PartialOrderRole>;
+
+type RecordOrder = Record<OrderType, Partial<RecordCommonOrder>>;
+
+ReturnType<RecordOrder>;
+```
+
+---
+
+### 참고자료
+
+[alex.log](https://velog.io/@seok93/3%EC%9E%A5-%EA%B3%A0%EA%B8%89%ED%83%80%EC%9E%85#-%EC%A0%9C%EB%84%A4%EB%A6%AD-%ED%81%B4%EB%9E%98%EC%8A%A4)
+
+[Coding-Village-Protector](https://github.com/Coding-Village-Protector/woowahan-ts/tree/main)
