@@ -5,12 +5,12 @@
 - 어떠한 값을 할당하더라도 오류가 발생하지 않음(never는 제외)
 - 지양해야 할 패턴. But, 어쩔 수 없이 사용해야 하는 경우가 있다.
 
-### 개발 단계에서 임시로 값을 지정해야 할 때
+### ✏️ 개발 단계에서 임시로 값을 지정해야 할 때
 
 - 타입을 세세하게 명시하는 데 소요되는 시간 절약 가능
 - any 타입으로 지정하고 나서 다른 타입으로 바꾸는 과정이 누락되면 문제가 발생하니 주의하자
 
-### 어떤 값을 받아올지 or 넘겨줄지 정할 수 없을 때
+### ✏️ 어떤 값을 받아올지 or 넘겨줄지 정할 수 없을 때
 
 - API 요청/응답 처리, 콜백 함수 전달, 외부 라이브러리 등을 사용할 때는 어떤 인자를 주고받을지 특정하기 힘듦
 
@@ -27,7 +27,7 @@
 
 - 주고받을 값이 명확하지 않을 때 열린 타입(any)을 선언해야 할 수 있음
 
-### 값을 예측할 수 없을 때 암묵적으로 사용
+### ✏️ 값을 예측할 수 없을 때 암묵적으로 사용
 
 - 외부 라이브러리나 웹 API의 요청에 따라 다양한 값을 반환하는 API가 존재할 수 있음
   ```ts
@@ -43,7 +43,7 @@
 - any 타입과 유사하게 모든 타입의 값이 할당될 수 있음
 - any를 제외한 다른 타입으로 선언된 변수에는 unknown type 값을 할당 불가능
 
-### 의문 - any type도 있는데 unknown type은 왜 필요할까?
+### ✏️ 의문 - any type도 있는데 unknown type은 왜 필요할까?
 
 - any 타입을 사용 후 특정 타입으로 수정해야 하는 과정을 누락하면 런타임에 예상치 못한 버그가 발생할 가능성이 있기 때문에 위험함
 - 따라서, any타입과 유사하지만 타입 검사를 강제하고 타입이 식별된 후에 사용할 수 있는 unknown type이 등장함
@@ -76,7 +76,7 @@
 - 모든 타입의 하위 타입
 - never 자신을 제외한 어떤 타입도 never 타입에 할당 불가능
 
-### JS에서 값을 반환할 수 없는 경우
+### ✏️ JS에서 값을 반환할 수 없는 경우
 
 #### 에러를 던지는 경우
 
@@ -105,7 +105,7 @@
 
 - TS에서는 일반적으로 배열의 크기까지 제한 X
 
-### Tuple type
+### ✏️ Tuple type
 
 - 배열 타입의 하위 타입으로 기존 TS의 배열 기능에 길이 제한까지 추가한 타입 시스템
 
@@ -164,7 +164,7 @@
   ProgrammingLanguage[400]; // TypeScript
   ```
 
-### enum의 왜 쓸까?
+### ✏️ enum의 왜 쓸까?
 
 - 주로 문자열 상수를 생성하는 데 사용
 - 가독성을 높임
@@ -251,7 +251,7 @@
 
 2. enum 타입은 컴파일 때 `즉시 실행 함수` 형식으로 바뀜. 문제는 일부 번들러에서 트리쉐이킹 과정 중 즉시 실행 함수로 변환된 값을 사용하지 않는 코드로 인식하지 못하는 경우가 발생할 수 있음. 따라서 `불필요한 코드로 인해 번들 사이즈가 증가하는 결과를 초래`
 
-### [enum, const enum, 트리쉐이킹 관련 블로그](https://engineering.linecorp.com/ko/blog/typescript-enum-tree-shaking)
+### 🌐 [enum, const enum, 트리쉐이킹 관련 블로그](https://engineering.linecorp.com/ko/blog/typescript-enum-tree-shaking)
 
 # 타입 조합
 
@@ -439,7 +439,7 @@ function exampleFucn2<T extends TypeWithLength>(arg: T): number {
   const cExample: Subset<Example> = { c: true }; // Object literal may only specify known properties, and 'c' does not exist in type 'Subset<Example>'
   ```
 
-  ### 다양한 수식어
+  ### ✏️ 다양한 수식어
 
   #### `readonly`: 읽기 전용 속성으로 만들 때
 
@@ -584,7 +584,7 @@ function exampleFucn2<T extends TypeWithLength>(arg: T): number {
 
 - 설명중.......
 
-### 제네릭을 사용하지 않아도 되는 경우
+### ✏️ 제네릭을 사용하지 않아도 되는 경우
 
 #### 1. 제네릭을 굳이 사용하지 않아도 되는 타입
 
@@ -647,7 +647,7 @@ ReturnType<RecordOrder>;
 
 ---
 
-### 참고자료
+### 🌐 참고자료
 
 [alex.log](https://velog.io/@seok93/3%EC%9E%A5-%EA%B3%A0%EA%B8%89%ED%83%80%EC%9E%85#-%EC%A0%9C%EB%84%A4%EB%A6%AD-%ED%81%B4%EB%9E%98%EC%8A%A4)
 
