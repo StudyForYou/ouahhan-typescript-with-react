@@ -582,8 +582,6 @@ function exampleFucn2<T extends TypeWithLength>(arg: T): number {
 
 ## 📝 제네릭 예시
 
-- 설명중.......
-
 ### ✏️ 제네릭을 사용하지 않아도 되는 경우
 
 #### 1. 제네릭을 굳이 사용하지 않아도 되는 타입
