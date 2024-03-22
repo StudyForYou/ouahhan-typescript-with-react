@@ -35,47 +35,47 @@
 
 ### ✏️ 유니온 타입
 
-```ts
-interface CookingStep {
-  orderId: string;
-  price: number;
-}
-
-interface DeliveryStep {
-  orderId: string;
-  time: number;
-  distance: string;
-}
-
-function getDeliveryDistance(step: CookingStep | DeliveryStep) {
-  return step.distance;
-  // ❌ Property 'distance' does not exist on type 'CookingStep | DeliveryStep'.
-  // ❌ Property 'distance' does not exist on type 'CookingStep'.
-}
-```
-
 - 유니온 타입으로 선언된 값은 유니온 타입에 포함된 모든 타입이 공통으로 갖고 있는 속성에만 접근할 수 있다.
+
+  ```ts
+  interface CookingStep {
+    orderId: string;
+    price: number;
+  }
+
+  interface DeliveryStep {
+    orderId: string;
+    time: number;
+    distance: string;
+  }
+
+  function getDeliveryDistance(step: CookingStep | DeliveryStep) {
+    return step.distance;
+    // ❌ Property 'distance' does not exist on type 'CookingStep | DeliveryStep'.
+    // ❌ Property 'distance' does not exist on type 'CookingStep'.
+  }
+  ```
 
 ### ✏️ 교차 타입
 
 - 기존 타입을 합쳐 필요한 모든 기능을 가진 하나의 타입을 만드는 것
 
-```ts
-interface DeliveryTip {
-  tip: string;
-}
+  ```ts
+  interface DeliveryTip {
+    tip: string;
+  }
 
-interface StarRating {
-  rate: number;
-}
+  interface StarRating {
+    rate: number;
+  }
 
-type Filter = DeliveryTip & StarRating;
+  type Filter = DeliveryTip & StarRating;
 
-const filter: Filter = {
-  tip: "1000원 이하",
-  rate: 4,
-};
-```
+  const filter: Filter = {
+    tip: "1000원 이하",
+    rate: 4,
+  };
+  ```
 
 - 교차 타입을 사용할 때 타입이 서로 호환되지 않는 경우
 
@@ -97,21 +97,21 @@ const filter: Filter = {
 
 - extends 키워드를 사용한 타입이 교차 타입과 100% 상응하지 않는다!
 
-```ts
-interface DeliveryTip {
-  tip: number;
-}
+  ```ts
+  interface DeliveryTip {
+    tip: number;
+  }
 
-interface Filter extends DeliveryTip {
-  tip: string;
-  // Interface 'Filter' incorrectly extends interface 'DeliveryTip'
-  // Types of property 'tip' are incompatible
-  // Type 'string' is not assignable to type 'number'
-}
+  interface Filter extends DeliveryTip {
+    tip: string;
+    // Interface 'Filter' incorrectly extends interface 'DeliveryTip'
+    // Types of property 'tip' are incompatible
+    // Type 'string' is not assignable to type 'number'
+  }
 
-type DeliveryTip2 = { tip: number };
-type Filter2 = DeliveryTip2 & { tip: string }; // tip은 never 속성 타입
-```
+  type DeliveryTip2 = { tip: number };
+  type Filter2 = DeliveryTip2 & { tip: string }; // tip은 never 속성 타입
+  ```
 
 - interface와 extends를 이용하는 경우 속성 간의 타입 호환이 되지 않는 경우 에러를 일으키지만, type과 교차 타입을 이용하는 경우에는 속성 간의 타입이 호환되지 않는 경우 never 타입으로 설정된다.
 - type 키워드는 교차 타입으로 선언되었을 때 새롭게 추가되는 속성에 대해 미리 알 수 없기 때문에 선언시 에러가 발생하지 않는다.
@@ -172,18 +172,19 @@ interface PackageMenu extends Menu {
 - null과 배열 타입 등이 object 타입으로 판별되는 등 복합한 타입을 검증하기에는 한계가 존재
 - 따라서, `원시 타입을 좁히는 용도로만 사용할 것을 권장한다.`
 - typeof 연산자를 사용하여 검사할 수 있는 타입 목록
+
   - string, number, boolean, undefined, object, function, bigint, symbol
 
-```ts
-const replaceHyphen: (date: string | Date) => string | Date = (date) => {
-  if (typeof date === "string") {
-    // 이 분기에서는 date의 타입이 string으로 추론된다.
-    return date.replace(/-/g, "/");
-  }
+  ```ts
+  const replaceHyphen: (date: string | Date) => string | Date = (date) => {
+    if (typeof date === "string") {
+      // 이 분기에서는 date의 타입이 string으로 추론된다.
+      return date.replace(/-/g, "/");
+    }
 
-  return date;
-};
-```
+    return date;
+  };
+  ```
 
 ### ✏️ 인스턴스화된 객체 타입을 판별할 때: instanceof 연산자 활용하기
 
@@ -191,14 +192,14 @@ const replaceHyphen: (date: string | Date) => string | Date = (date) => {
 - instanceof는 A의 프로토타입 체인에 생성자 B가 존재하는지를 검사해서 존재한다면 true, 그렇지 않다면 false를 반환한다.
 - A의 프로토타입 속성 변화에 따라 instanceof 연산자의 결과가 달라질 수 있다는 점은 유의해야 한다.
 
-```ts
-const onKeyDown = (e: React.KeyboardEvent) => {
-  if (e.target instanceof HTMLInputElement && e.key === "Enter") {
-    // 이 분기에서는 e.target의 타입이 HTMLInputElement이다.
-    e.target.blur();
-  }
-};
-```
+  ```ts
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.target instanceof HTMLInputElement && e.key === "Enter") {
+      // 이 분기에서는 e.target의 타입이 HTMLInputElement이다.
+      e.target.blur();
+    }
+  };
+  ```
 
 ### ✏️ 객체의 속성이 있는지 없는지에 따른 구분: in 연산자 활용하기
 
