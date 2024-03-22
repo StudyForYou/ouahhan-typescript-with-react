@@ -76,6 +76,7 @@ const array: Array<number> = [1, 2, 3];
 - 타입스크립트 코드가 자바스크립트로 변환될 때 즉시 실행 함수(IIFE) 형식으로 변환됨
   - 이때 일부 번들러에서 트리쉐이킹 과정 중 즉시 실행 함수로 변환된 값을 사용하지 않는 코드로 인식하지 못하는 경우가 발생할 수 있음
   - 따라서 불필요한 코드의 크기가 증가하는 결과 초래 가능
+- const enum을 사용하면 역방향으로의 접근을 허용하지 않음
 
 ```ts
 enum ProgrammingLanguage {
@@ -109,7 +110,7 @@ const enum NUMBER {
   ONE = 1,
   TWO = 2,
 }
-const myNumber: NUMBER = 10; // NUMBER enum에서 100을 관리하고 있지 않지만 이는 에러를 발생시키지 않는다
+const myNumber: NUMBER = 10; // NUMBER enum에서 100을 관리하고 있지 않지만 이는 에러를 발생시키지 않는다 -> 타입스크립트 5버전 이후로는 에러가 발생하지 않음
 
 const enum STRING_NUMBER {
   ONE = 'ONE',
@@ -163,7 +164,7 @@ const printPromotionItem = (item: PromotionEventItem) => {
 
 ### 인덱스 시그니처(Index Signatures)
 
-- 특정 타입의 속성 이름은 알 수 없지만 속성값의 타입을 알고 있을 때 사용하는 문법
+- `특정 타입의 속성 이름은 알 수 없지만 속성값의 타입을 알고 있을 때 사용`하는 문법
 - 인터페이스 내부에 [Key: T]: T 꼴로 타입을 명시해주면 됨
   - 해당 타입의 속성 키는 모두 K 타입이어야 하고 속성 값은 모두 T 타입을 가져야 한다는 의미
 
@@ -173,7 +174,7 @@ interface IndexSignatureEx {
 }
 ```
 
-- 인덱스 시그니처를 선언할 때 다른 속성을 추가로 명시해줄 수 있는데 이때 추가로 명시된 속성은 인덱스 시그니처에 포함되는 타입이어야 함
+- 인덱스 시그니처를 선언할 때 다른 속성을 추가로 명시해줄 수 있는데 이때 `추가로 명시된 속성은 인덱스 시그니처에 포함되는 타입이어야 함`
   - 아래 예시는 그렇지 않기 때문에 에러 발생
 
 ```ts
@@ -187,7 +188,7 @@ interface IndexSignatureEx2 {
 
 ### 인덱스드 엑세스 타입(Indexed Access Types)
 
-- 다른 타입의 특정 속성이 가지는 타입을 조회하기 위해 사용
+- `다른 타입의 특정 속성이 가지는 타입을 조회하기 위해 사용`
 
 ```ts
 type Example = {
@@ -206,7 +207,7 @@ type IndexedAccess4 = Example[ExAlias]; // string | boolean
 
 ### 맵드 타입(Mapped Types)
 
-- 다른 타입을 기반으로 한 타입을 선언할 때 사용하는 문법인데, 인덱스 시그니처 문법을 사용해서 반복적인 타입 선언을 효과적으로 줄일 수 있음
+- 다른 타입을 기반으로 한 타입을 선언할 때 사용하는 문법인데, 인덱스 시그니처 문법을 사용해서 `반복적인 타입 선언을 효과적으로 줄일 수 있음`
 
 ```ts
 type Example = {
@@ -226,7 +227,7 @@ const aExample: Subset<Example> = { a: 4, c: true };
 
 ### 템플릿 리터럴 타입(Template)
 
-- 템플릿 리터럴 문자열을 사용하여 문자열 리터럴 타입을 선언할 수 있는 문법
+- 템플릿 리터럴 문자열을 사용하여 `문자열 리터럴 타입을 선언할 수 있는 문법`
 
 ```ts
 type: Stage =
@@ -241,7 +242,7 @@ type StageName = `${stage}-stage`;
 
 ### 제네릭(Generic)
 
-- 정적 언어에서 다양한 타입 간에 재사용성을 높이기 위해 사용하는 문법
+- 정적 언어에서 다양한 타입 간에 `재사용성을 높이기 위해 사용하는 문법`
 - 사용할 타입을 미리 정해두지 않고 타입 변수를 사용해서 해당 위치를 비워 둔 다음에. 실제로 그 값을 사용할 때 외부에서 타입 변수 자리에 타입을 지정하여 사용하는 방식
 
 ```ts
@@ -321,3 +322,130 @@ interface useSelectPaginationProps<T> {
   fetcherFunc: (props: CommonListRequest) => Promise<DefaultResponse<ContentListResponse<T>>>;
 }
 ```
+
+### 제네릭 클래스
+
+- 제네릭 클래스는 외부에서 입력된 타입을 클래스 내부에 적용할 수 있는 클래스
+
+```js
+class LocalDB<T> {
+  // ...
+  async put(table: string, row: T): Promise<T> {
+    return new Promise<T>((resolved, rejected) => { /* T 타입의 데이터를 DB에 저장 */ });
+  }
+
+  async get(table:string, key: any): Promise<T> {
+    return new Promise<T>((resolved, rejected) => { /* T 타입의 데이터를 DB에서 가져옴 */ });
+  }
+
+  async get(table:string: Promise<T[]> {
+    return new Promise<T[]>((resolved, rejected) => { /* T[] 타입의 데이터를 DB에서 가져옴 */ });
+  }
+
+  export default class IndexedDB implements ICacheStore {
+    private _DB?: LocalDB<{ key: string; value: Promise<Record<string, unknown>>; cacheTTL: number }>;
+
+    private DB() {
+      if(!this._DB) {
+        this._DB = new LocalDB("localCache", { ver: 6, tables: [{ name: TABLE_NAME, keyPath: "key }] });
+      }
+      return this._DB;
+    }
+    // ...
+  }
+}
+```
+
+### 제한된 제네릭
+
+- 타입 매개변수에 대한 제약 조건을 설정하는 기능을 말함
+- 상속받을 수 있는 타입으로는 기본 타입뿐만 아니라 상황에 따라 인터페이스, 클래스도 사용 할 수 있다.(유니온 타입을 상속해서 선언도 가능)
+
+```ts
+// 예를 들어 string 타입으로 제약하려면 타입 매개변수는 특정 타입을 상속(extends) 해야 한다.
+
+type ErrorRecord<Key extends string> = Exclude<Key, ErrorCodeType> extends never
+  ? Partial<Record<Key, boolean>>
+  : never;
+```
+
+- 위의 예시처럼 타입 매개변수가 특정 타입으로 묶였을 때 키를 바운드 타입 매개변수(bounded type parameters)라고 부르며 string을 키의 상한 한계(upper bound)라고 한다.
+
+### 확장된 제네릭
+
+- 제네릭 타입은 여러 타입을 상속받을 수 있으며 타입 매개변수를 여러 개 둘 수 있음
+
+```ts
+<Key extends string>
+// 이런식으로 제약해버리면 제네릭의 유연성을 잃어버림
+// -> 타입 매개변수에 유니온 타입을 상속해서 선언
+
+<Key extends string | number>
+// 유니온 타입으로 T가 여러 타입을 받게 할 수는 있지만, 타입 매개변수가 여러 개일 때는 처리할 수 없음
+// 이럴 때는 매개변수를 하나 더 추가하여 선언
+```
+
+### 제네릭 예시
+
+- 제네릭의 장점은 다양한 타입을 받게 함으로써 코드를 효율적으로 재사용할 수 있는 것
+- API 응답 값의 타입을 지정할 때 많이 활용
+
+```ts
+export interfface MobileApiResponse<Data> {
+  data: Data;
+  statusCode: string;
+  statusMessage?: string;
+}
+
+// API 응답 값에 따라 달라지는 data를 제네릭 타입 Data로 선언하고 있기 때문에 효율적으로 재사용 가능
+```
+
+- 제네릭을 굳이 사용하지 않아도 되는 타입
+
+  - 필요하지 않은 곳에서 사용하면 코드 길이만 늘어나고 가독성을 해칠 수 있음
+
+  ```ts
+  type GType<T> = T;
+  type RequirementType = "USE" | "UN_USE" | |"NON_SELECT";
+  interface Order {
+    getRequirement(): GType<RequirementType>;
+  }
+
+  type RequirementType = "USE" | "UN_USE" | |"NON_SELECT";
+  interface Order {
+    getRequirement(): RequirementType;
+  }
+
+  // GType이라는 이름이 현재 사용되고 있는 목적의 의미를 정확히 담고 있지도 않고
+  // 굳이 제네릭을 사용하지 않고 타입 매개변수를 그대로 선언하는 것과 같은 기능을 하고 있음
+  ```
+
+  - any 사용하기
+
+  ```ts
+  type ReturnType<T = any> = {
+    // ...
+  };
+
+  // any를 사용하면 제네릭의 장점과 타입 추론 및 타입 검사를 할 수 있는 이점을 누릴 수 없게됨
+  ```
+
+  - 가독성을 고려하지 않은 사용
+
+  ```ts
+  ReturnType<
+    Record<OrderType, Partial<Record<CommonOrderStatus | CommonReturnStatus, Partial<Record<OrderRoleType, string[]>>>>>
+  >;
+
+  type CommonStatus = CommonOrderStatus | CommonReturnStatus;
+
+  type PartialOrderRole = Partial<Record<OrderRoleType, string[]>>;
+
+  type RecordCommonOrder = Record<CommonStatus, PartialOrderRole>;
+
+  type RecordOrder = Record<OrderType, Partial<RecordCommonOrder>>;
+
+  ReturnType<RecordOrder>;
+
+  // 제네릭을 과하게 사용하면 가독성을 해치기 때문에 코드를 읽고 타입을 이해하기 어려워진다.
+  ```
