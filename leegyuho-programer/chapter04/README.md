@@ -234,7 +234,7 @@ const onKeyDown = (event: React.KeyboardEvent) => {
 
 - in 연산자는 객체에 속성이 있는지 확인한 후 true 또는 false를 반환
 - A라는 속성이 B 객체에 존재하는지 검사
-- 자바스크립트의 in 연산자는 런타임의 값만을 검사하지만 타입스크립트에서는 객체 타입에 속성이 존재하는지를 검사
+- `자바스크립트의 in 연산자는 런타임의 값만을 검사`하지만 `타입스크립트에서는 객체 타입에 속성이 존재하는지를 검사`
 
 ```ts
 interface Person {
@@ -285,7 +285,7 @@ const NoticeDialog: React.FC<NoticeDialogProps> = (props) => {
 ### is 연산자로 사용자 정의 타입 가드 만들어 활용하기
 
 - 직접 타입 가드 함수를 만들 수 있음
-  - 반환 타입이 타입 명제인 함수를 정의하여 사용 할 수 있음
+  - `반환 타입이 타입 명제인 함수를 정의`하여 사용 할 수 있음
   - 타입명제: 함수의 반환 타입에 대한 타입 가드를 수행하기 위해 사용되는 특별한 형태의 함수
 - ex) A is B -> A는 매개변수 이름, B는 타입 -> 반환 값이 참일 때 A 매개변수의 타입을 B 타입으로 취급
 
@@ -323,13 +323,13 @@ printPetInfo(dog); // Buddy is a dog of breed Labrador
 
 - 반환 값의 타입이 boolean인 것과 is를 활용한 것의 차이
   - 사용자 정의 타입 가드에서 반환 값이 is를 활용한 경우
-    - 해당 함수를 호출한 곳에서 타입 가드를 통과한 경우에만 해당 타입으로 추론됨
-    - 타입스크립트 컴파일러는 반환 값이 true인 경우에만 해당 객체를 해당 타입으로 추론하고 그렇지 않은 경우에는 해당 타입으로 추론되지 않음
+    - 해당 함수를 `호출한 곳에서 타입 가드를 통과한 경우에만 해당 타입으로 추론`됨
+    - 타입스크립트 컴파일러는 `반환 값이 true인 경우에만 해당 객체를 해당 타입으로 추론`하고 그렇지 않은 경우에는 해당 타입으로 추론되지 않음
     - 타입스크립트 컴파일러가 객체의 타입을 더 정확하게 추론할 수 있음
   - boolean 타입인 경우
-    - 해당 함수를 호출한 곳에서는 항상 해당 타입으로 추론됨
-    - 즉, 반환 값이 true 또는 false인 경우에도 해당 타입으로 추론됨
-    - 타입 가드가 실패하더라도 해당 객체는 여전히 해당 타입으로 추론될 수 있음
+    - 해당 함수를 호출한 곳에서는 `항상 해당 타입으로 추론`됨
+    - 즉, `반환 값이 true 또는 false인 경우에도 해당 타입으로 추론`됨
+    - 타입 가드가 `실패하더라도 해당 객체는 여전히 해당 타입으로 추론될 수 있음`
 - 따라서 is를 활용한 사용자 정의 타입 가드는 보다 정확한 타입 추론을 가능하게 하며, 코드의 가독성과 안정성을 높일 수 있음
 
 ```ts
@@ -400,6 +400,191 @@ printAnimalType(dog); // Buddy is not a cat.
 
 > # 4.3 타입 좁히기 - 식별할 수 있는 유니온(Discriminated Unions)
 
+- 태그된 유니온으로도 불리는 식별할 수 있는 유니온은 타입 좁히기에 널리 사용되는 방식
+
 ### 에러 정의하기
 
--
+```ts
+type TextError = {
+  errorCode: string;
+  errorMessage: string;
+};
+type ToastError = {
+  errorCode: string;
+  errorMessage: string;
+  toastShowDuration: number; // 토스트를 띄워줄 시간
+};
+type AlertError = {
+  errorCode: string;
+  errorMessage: string;
+  onConfirm: () => void; // 얼럿 창의 확인 버튼을 누른 뒤 액션
+};
+```
+
+```ts
+type ErrorFeedbackType = TextError | ToastError | AlertError;
+const errorArr: ErrorFeedbackType[] = [
+  { errorCode: “100”, errorMessage: “텍스트 에러” },
+  { errorCode: “200”, errorMessage: “토스트 에러”, toastShowDuration: 3000 },
+  { errorCode: “300”, errorMessage: “얼럿 에러”, onConfirm: () => {} },
+];
+```
+
+- 각 에러 타입을 위와 같이 정의 하고 에러 타입의 유니온 타입을 원소로 하는 배열을 정의해보면 위와 같이 나옴
+- ToastError의 toastShowDuration 필드와 AlertError의 onConfirm 필드를 모두 가지는 개체에 대해서는 타입 에러를 뱉어야 함
+
+```ts
+const errorArr: ErrorFeedbackType[] = [
+  // ...
+  {
+  errorCode: “999”,
+  errorMessage: “잘못된 에러”,
+  toastShowDuration: 3000,
+  onConfirm: () => {},
+  }, // expected error
+];
+```
+
+- BUT 자바스크립트는 덕타이핑 언어이기 때문에 별도의 타입 에러를 뱉지 않음
+- 앞으로의 개발 과정에서 의미를 알 수 없는 무수한 에러 객체가 생겨날 위험성 커짐
+
+### 식별할 수 있는 유니온
+
+- 타입 간의 구조 호환을 막기 위해 타입마다 구분할 수 있는 판별자를 달아주어 포함 관계를 제거하는 것
+
+```ts
+// 판별자 개념으로 errorType이라는 필드 정의
+// 각 에러 타입마다 이 필드에 대해 다른 값을 가지도록 하여 판별자를 달아주면 이들은 포함 관계를 벗어남
+
+type TextError = {
+  errorType: “TEXT”;
+  errorCode: string;
+  errorMessage: string;
+};
+type ToastError = {
+  errorType: “TOAST”;
+  errorCode: string;
+  errorMessage: string;
+  toastShowDuration: number;
+}
+type AlertError = {
+  errorType: “ALERT”;
+  errorCode: string;
+  errorMessage: string;
+  onConfirm: () = > void;
+};
+```
+
+- 이렇게 하면 정확하지 않은 에러 객체에 대해 타입 에러가 발생
+
+```ts
+type ErrorFeedbackType = TextError | ToastError | AlertError;
+
+const errorArr: ErrorFeedbackType[] = [
+  { errorType: “TEXT”, errorCode: “100”, errorMessage: “텍스트 에러” },
+  {
+    errorType: “TOAST”,
+    errorCode: “200”,
+    errorMessage: “토스트 에러”,
+    toastShowDuration: 3000,
+  },
+  {
+    errorType: “ALERT”,
+    errorCode: “300”,
+    errorMessage: “얼럿 에러”,
+    onConfirm: () => {},
+  },
+  {
+    errorType: “TEXT”,
+    errorCode: “999”,
+    errorMessage: “잘못된 에러”,
+    toastShowDuration: 3000, // Object literal may only specify known properties, and ‘toastShowDuration’ does not exist in type ‘TextError’
+    onConfirm: () => {},
+  },
+  {
+    errorType: “TOAST”,
+    errorCode: “210”,
+    errorMessage: “토스트 에러”,
+    onConfirm: () => {}, // Object literal may only specify known properties, and ‘onConfirm’ does not exist in type ‘ToastError’
+  },
+  {
+    errorType: “ALERT”,
+    errorCode: “310”,
+    errorMessage: “얼럿 에러”,
+    toastShowDuration: 5000, // Object literal may only specify known properties, and ‘toastShowDuration’ does not exist in type ‘AlertError’
+  },
+];
+```
+
+### 식별할 수 있는 유니온의 판별자 선정
+
+- 식별할 수 있는 유니온의 판별자는 `유닛 타입으로 선언되어야 정상적으로 동작`함
+- 유닛 타입: 다른 타입으로 쪼개지지 않고 오직 하나의 정확한 값을 가지는 타입
+  - null, undefined, true, 1 등 정확한 값을 나타내는 타입이 해당
+  - void, string, number 등은 다양한 타입을 할당할 수 있기 때문에 유닛 타입으로 적용 X
+- 유니온의 판별자로 사용할 수 있는 타입
+  - 리터럴 타입이어야 함
+  - 판별자로 선정한 값에 `적어도 하나 이상의 유닛 타입이 포함`되어야 하며, `인스턴스화할 수 있는 타입은 포함되지 않아야 함`
+
+> # 4.4 Exhaustiveness Checking으로 정확한 타입 분기 유지하기
+
+- 모든 케이스에 대해 철저하게 타입을 검사하는 것을 말함
+- 컴파일 타임 에러가 발생하게 하는 것
+- 예상치 못한 런타임 에러를 방지하거나 요구사항이 변경되었을 때 생길 수 있는 위험성을 줄일 수 있음
+
+### 상품권
+
+- 상품권 가격에 따라 상품권 이름을 반환해주는 함수를 작성하면 다음과 같음
+
+```ts
+type ProductPrice = “10000” | “20000”;
+
+const getProductName = (productPrice: ProductPrice): string => {
+  if (productPrice === “10000”) return “배민상품권 1만 원”;
+  if (productPrice === “20000”) return “배민상품권 2만 원”;
+  else {
+    return “배민상품권”;
+  }
+};
+```
+
+- 새로운 상품권이 생겨서 ProductPrice 타입이 업데이터 되어야 한다고 하면 아래와 같이 업데이트 할 수 있음
+- ProductPrice가 업데이트 되었을 때 getProductName 함수도 함께 업데이트 되어야 함
+- 그러나 getProductName 함수를 수정하지 않아도 별도 에러가 발생하지 않기 때문에 실수할 여지가 있음
+
+```ts
+type ProductPrice = “10000” | “20000” | “5000”;
+
+const getProductName = (productPrice: ProductPrice): string => {
+  if (productPrice === “10000”) return “배민상품권 1만 원”;
+  if (productPrice === “20000”) return “배민상품권 2만 원”;
+  if (productPrice === “5000”) return “배민상품권 5천 원”; // 조건 추가 필요
+  else {
+    return “배민상품권”;
+  }
+};
+```
+
+- 모든 타입에 대한 타입 검사를 강제하고 싶다면 아래와 같이 할 수 있음
+
+```ts
+type ProductPrice = “10000” | “20000” | “5000”;
+
+const getProductName = (productPrice: ProductPrice): string => {
+  if (productPrice === “10000”) return “배민상품권 1만 원”;
+  if (productPrice === “20000”) return “배민상품권 2만 원”;
+  // if (productPrice === “5000”) return “배민상품권 5천 원”;
+  else {
+    exhaustiveCheck(productPrice); // Error: Argument of type ‘string’ is not assignable to parameter of type ‘never’
+    return “배민상품권”;
+  }
+};
+
+const exhaustiveCheck = (param: never) => {
+  throw new Error(“type error!”);
+};
+```
+
+- 5000일 때 분기 처리가 주석 처리되어 있기 때문에 에러가 발생함
+- 이 함수는 매개변수를 never 타입으로 선언하여 매개변수로 어떤 값도 바을 수 없으면 만일 값이 들어온다면 에러를 내뱉음
+- 타입 처리 조건문의 마지막 else문에 사용하면 앞의 조건문에서 모든 타입에 대한 분기 처리 강제 가능
