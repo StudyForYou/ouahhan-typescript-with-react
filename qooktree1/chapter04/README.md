@@ -207,20 +207,27 @@ interface PackageMenu extends Menu {
 - **A in B** -> A라는 속성이 B 객체에 존재하는 지를 검사
 - JS의 in 연산자는 런타임의 값만을 검사하지만 TS에서는 객체 타입에 속성이 존재하는지를 검사한다.
 
-  ```ts
-  // JavaScript
-  const obj = { a: 1 };
-  console.log("a" in obj); // true
-  console.log("b" in obj); // false
-
-  //TypeScript
-  interface MyObj {
-    a: number;
+  ```tsx
+  interface BasicNoticeDialogProps {
+    noticeTitle: string;
+    noticeBody: string;
   }
 
-  const obj: MyObj = { a: 1 };
-  console.log("a" in obj); // true
-  console.log("b" in obj); // 컴파일 에러 발생 - 정적 타입 정보를 기반으로 프로퍼티 존재 여부를 검사
+  interface NoticeDialogWithCookieProps extends BasicNoticeDialogProps {
+    cookieKey: string;
+    noForADay?: boolean;
+    neverAgain?: boolean;
+  }
+
+  export type NoticeDialogProps =
+    | BasicNoticeDialogProps
+    | NoticeDialogWithCookieProps;
+
+  const NoticeDialog: React.FC<NoticeDialogProps> = props => {
+    // in 연산자의 return 값은 true or false
+    if ("cookieKey" in props) return <NoticeDialogWithCookie {...props}>;
+    return <NoticeDialogBase {...props} />
+  }
   ```
 
 ### ✏️ is 연산자로 사용자 정의 타입 가드 만들어 활용하기
@@ -340,8 +347,13 @@ const errorArr: ErrorFeedbackType[] = {
 ### ✏️ 식별할 수 있는 유니온의 판별자 선정
 
 - 판별자의 기준은?
+
   - `리터럴 타입`이어야 한다.
   - 판별자로 선정한 값에 적어도 하나 이상의 유닛 타입이 포함되어야 하며, 인스턴스화 할 수 있는 타입(instantiable type)은 포함되지 않아야 한다.
+
+  #### `유닛 타입`: 다른 타입으로 쪼개지지 않고 오직 하나의 정확한 값을 가지는 타입. null, undefined, 리터럴 타입을 비롯해 true, 1 등 정확한 값을 나타내는 타입이 해당됨
+
+  #### `instantiable type(인스턴스화할 수 있는 타입)`: class 타입을 예로 들 수 있다. new 키워드를 써서 정의 가능하다.(ex. Error 객체)
 
 ## 📝 Exhaustiveness Checking으로 정확한 타입 분기 유지하기
 
