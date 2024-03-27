@@ -95,13 +95,17 @@ export const useGetRegisteredList = <T extends "card" | "appcard" | "bank">(
 
 ### ✏️ infer를 활용해서 타입 추론하기
 
-- extends를 사용할 때 `infer` 키워드를 사용 가능
+- extends를 사용할 때만 `infer` 키워드를 사용 가능
 
 ```ts
 type UnpackPromise<T> = T extends Promise<infer K>[] ? K : any;
 const promises = [Promise.resolve("Mark"), Promise.resolve(38)];
 type Expected = UnpackPromise<typeof promises>; // string | number
 ```
+
+#### 왜 사용할까?
+
+- Promise 처럼 Generic으로 받는 타입 내부의 타입을 추론할때 사용합니다.
 
 ## 📝 템플릿 리터럴 타입 활용하기
 
@@ -260,12 +264,12 @@ type Expected = UnpackPromise<typeof promises>; // string | number
 
 #### NonNullable 타입
 
-- TS에서 제공하는 유틸리티 타입으로 제네릭으로 받는 T가 null or undefined일 때 never or T를 반환하는 타입
+- `TS에서 제공하는 유틸리티 타입`으로 제네릭으로 받는 T가 null or undefined일 때 never or T를 반환하는 타입
 - null이나 undefined가 아닌 경우를 제외하기 위해 사용
 
-```ts
-type NonNullable<T> = T extends null | undefiend ? never : T;
-```
+  ```ts
+  type NonNullable<T> = T extends null | undefiend ? never : T;
+  ```
 
 #### NonNullable 커스텀 함수
 
@@ -301,4 +305,11 @@ class AdCampaignAPI {
 const shopAdCampaignList = await Promise.all(
   shopList.map((shop) => AdCampaignAPI.operating(shop.shopNo))
 );
+
+// null이나 undefined값을 필터링 할 수 있게 된다.
+const shopAds = shopAdCampaginList.filter(NonNullable);
 ```
+
+- ### 그럼 shopAdCampaginList.filter(shop => !!shop)을 사용하면 되지 않을까?
+  - JS에서 제공하는 filter method는 결과 배열에 요소를 유지하려면 true, 아니면 false를 반환합니다.
+  - 즉, null 타입을 타입 추론해주지 않습니다.
