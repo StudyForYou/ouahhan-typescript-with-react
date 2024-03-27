@@ -313,3 +313,173 @@ const shopAds = shopAdCampaginList.filter(NonNullable);
 - ### 그럼 shopAdCampaginList.filter(shop => !!shop)을 사용하면 되지 않을까?
   - JS에서 제공하는 filter method는 결과 배열에 요소를 유지하려면 true, 아니면 false를 반환합니다.
   - 즉, null 타입을 타입 추론해주지 않습니다.
+
+## 📝 불변 객체 타입으로 활용하기
+
+- 컴포넌트나 함수에서 객체를 사용할 때 열린 타입(`any`)으로 설정할 수 있다.
+
+  ```ts
+  const colors = {
+    red: "#F45452",
+    green: "#0C952A",
+    blue: "#1A7CFF",
+  };
+
+  const getColorHex = (key: string) => colors[key]; // 에러 발생 - colors에 어떤 값이 추가될지 모르기 때문에 getColorHex의 반환값은 any
+  ```
+
+  - 두 가지 방법을 통해 객체 타입을 더 정확하고 안전하게 설정할 수 있다.
+    - `as const` 키워드로 객체를 불변(`readonly`) 객체로 선언
+    - `keyof` 연산자로 함수 인자를 colors 객체에 존재하는 키값만 받도록 설정
+
+  ```ts
+  const colors = {
+    red: "#F45452",
+    green: "#0C952A",
+    blue: "#1A7CFF",
+  } as const; // colors 객체를 불변 객체로 선언
+
+  const getColorHex = (key: keyof typeof colors) => colors[key];
+  const redHex = getColorHex("red");
+  const unknownHex = getColorHex("yellow"); // 오류 발생
+  ```
+
+### ✏️ Atom 컴포넌트에서 theme style 객체 활용하기
+
+- 대부분의 프로젝트에서는 `스타일 값을 theme 객체`를 두고 관리한다.
+
+```ts
+const colors = {
+  black: "#000000",
+  gray: "#222222",
+  white: "#FFFFFF",
+  mint: "#2AC1BC",
+};
+
+const theme = {
+  colors: {
+    default: colors.gray,
+    ...colors,
+  },
+  fontSize: {
+    default: "16px",
+    small: "14px",
+    large: "18px",
+  },
+};
+```
+
+```tsx
+interface Props {
+  fontSize?: string;
+  color?: string;
+  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void | Promise<void>;
+}
+
+const Button: FC<Props> = ({ fontSize, color, children }) => {
+  return (
+    <ButtonWrap fontSize={fontSize} color={color}>
+      {children}
+    </ButtonWrap>
+  );
+};
+
+// 컴포넌트 ButtonWrap이 props로 스타일 키 값(fontSize, backgroundColor, color)을 전달받음
+const ButtonWrap = styled.button<Omit<Props, "onClick">>`
+  color: ${({ color }) => theme.color[color ?? "default"]};
+  font-size: ${({ fontSize }) => theme.fontSize[fontSize ?? "default"]};
+`;
+```
+
+- fontsize, backgroundcolor 같은 props 타입이 stirng 타입일 경우
+  1. 키값이 자동 완성되지 않는다.
+  2. 잘못된 키값을 넣어도 에러가 발생하지 않는다.
+- 이러한 문제는 `타입을 구체화`해 해결 가능하다.
+
+  ### 해결방법 - keyof, typeof 를 사용하여 타입을 구체화
+
+  ```ts
+  type ColorType = typeof keyof theme.colors;  // "default" | "black" | "gray" | "white" | "mint"
+  type FontSizeType = typeof keyof theme.fontSize;  // "default" | "small" | "large"
+
+  interface Props {
+    fontSize?: ColorType;
+    color?: FontSizeType;
+    onCLick: (event: React.MouseEvent<HTMLButtonElement>) => void | Promise<void>;
+  }
+  ```
+
+## 📝 Record 원시 타입 키 개선하기
+
+- 객체 선언 시 키가 어떤 값인지 명확하지 않으면 Record의 키를 string이나 number같은 원시 타입으로 명시하곤 하는데 이는 런타임 에러를 야기할 수 있어 주의가 필요하다.
+
+### ✏️ 무한한 키를 집합으로 가지는 Record
+
+```ts
+type Category = string;
+interface Food {
+  name: string;
+  // ...
+}
+const foodByCategory: Record<Category, Food[]> = {
+  한식: [{ name: "제육덮밥" }],
+  일식: [{ name: "초밥" }, { name: "텐동" }],
+};
+```
+
+- 객체 `foodByCategory`는 `string` 타입을 Record의 키로 사용하기 때문에 무한한 키 집합을 가지고 있다. 따라서 "한식", "일식"이 아닌 없는 키를 사용하더라도 타입 오류가 일어나지 않는다.
+
+  ```ts
+  foodByCategory["양식"]; // Food[]로 추론 - 오류 발생 X
+  foodByCategory["양식"].map((food) => console.log(food.name)); // 런타임에서 오류 발생 - Cannot read properties of undefined (reading ‘map’)
+
+  foodByCategory["양식"]?.map((food) => console.log(food.name)); // 정상 동작
+  ```
+
+  - undefined로 인한 런타임 에러를 방지하기 위해서 옵셔널 체이닝(`?.`)을 사용할 수 있지만 undefined일 수 있는 값을 인지하고 코드를 작성해야 하므로 휴먼 에러가 발생할 수 있다.
+
+### ✏️ 유닛 타입으로 변경하기
+
+- `키가 유한한 집합이라면 유닛 타입`을 사용할 수 있다.
+
+```ts
+type Category = "한식" | "일식";
+interface Food {
+  name: string;
+  // ...
+}
+
+const foodByCategory: Record<Category, Food[]> = {
+  한식: [{ name: "제육덮밥" }],
+  일식: [{ name: "초밥" }, { name: "텐동" }],
+};
+
+foodByCategory["양식"]; //  오류 발생 - Property '양식' does not exist on type 'Record<Category, Food[]>'
+```
+
+- 하지만 키가 무한해야 하는 상황에는 적합하지 않다.
+
+### ✏️ Partial을 활요앟여 정확한 타입 표현하기
+
+- 키가 무한한 상황에서는 Partial을 사용하여 해당 값이 undefined일 수 있는 상태임을 표현할 수 있다.
+- 객체 값이 undefined일 수 있는 경우에 Partial을 사용해서 `PartialRecord` 타입을 선언하고 객체를 선언할 때 이것을 활용할 수 있다.
+
+```ts
+type PartialRecord<K extends string, T> = Partial<Record<K, T>>;
+type Category = string;
+
+interface Food {
+  name: string;
+  // ...
+}
+
+const foodByCategory: PartialRecord<Category, Food[]> = {
+  한식: [{ name: "제육덮밥" }],
+  일식: [{ name: "초밥" }, { name: "텐동" }],
+};
+
+foodByCategory["양식"]; // Food[] 또는 undefined 타입으로 추론
+foodByCategory["양식"].map((food) => console.log(food.name)); // 오류 발생 - Object is possibly 'undefined'
+```
+
+- 개발자는 안내를 보고 옵셔널 체이닝 or 조건문을 사용하여 사전에 조치하여 런타임 에러를 방지할 수 있다.
