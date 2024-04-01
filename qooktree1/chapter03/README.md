@@ -1,16 +1,16 @@
-# 타입스크립트만의 독자적 타입 시스템
+<h1>타입스크립트만의 독자적 타입 시스템</h1>
 
-## 📝 any 타입
+# 📝 any 타입
 
 - 어떠한 값을 할당하더라도 오류가 발생하지 않음(never는 제외)
 - 지양해야 할 패턴. But, 어쩔 수 없이 사용해야 하는 경우가 있다.
 
-### ✏️ 개발 단계에서 임시로 값을 지정해야 할 때
+## ✏️ 개발 단계에서 임시로 값을 지정해야 할 때
 
 - 타입을 세세하게 명시하는 데 소요되는 시간 절약 가능
 - any 타입으로 지정하고 나서 다른 타입으로 바꾸는 과정이 누락되면 문제가 발생하니 주의하자
 
-### ✏️ 어떤 값을 받아올지 or 넘겨줄지 정할 수 없을 때
+## ✏️ 어떤 값을 받아올지 or 넘겨줄지 정할 수 없을 때
 
 - API 요청/응답 처리, 콜백 함수 전달, 외부 라이브러리 등을 사용할 때는 어떤 인자를 주고받을지 특정하기 힘듦
 
@@ -27,7 +27,7 @@
 
 - 주고받을 값이 명확하지 않을 때 열린 타입(any)을 선언해야 할 수 있음
 
-### ✏️ 값을 예측할 수 없을 때 암묵적으로 사용
+## ✏️ 값을 예측할 수 없을 때 암묵적으로 사용
 
 - 외부 라이브러리나 웹 API의 요청에 따라 다양한 값을 반환하는 API가 존재할 수 있음
   ```ts
@@ -38,12 +38,12 @@
   }
   ```
 
-## 📝 unknown type
+# 📝 unknown type
 
 - any 타입과 유사하게 모든 타입의 값이 할당될 수 있음
 - any를 제외한 다른 타입으로 선언된 변수에는 unknown type 값을 할당 불가능
 
-### ✏️ 의문 - any type도 있는데 unknown type은 왜 필요할까?
+## ✏️ 의문 - any type도 있는데 unknown type은 왜 필요할까?
 
 - any 타입을 사용 후 특정 타입으로 수정해야 하는 과정을 누락하면 런타임에 예상치 못한 버그가 발생할 가능성이 있기 때문에 위험함
 - 따라서, any타입과 유사하지만 타입 검사를 강제하고 타입이 식별된 후에 사용할 수 있는 unknown type이 등장함
@@ -51,34 +51,34 @@
 <details>
   <summary>💬 우형 이야기 - any와 unknown</summary>
 
-#### Q. any를 사용한다면 어떤 상황에서 사용할까요?
+### Q. any를 사용한다면 어떤 상황에서 사용할까요?
 
 - 객체의 구조를 정확히 알 수 없는 상황 -> But, 리팩토링하면서 다시 any 타입을 없애는 중
 - 표 컴포넌트같이 어떤 값을 받을지 모르는 상황에서 unknown을 사용하면, 가공할 때 타입 캐스팅을 모두 해야 하는 상황이 생겨 any를 사용
 - JS에서 TS 마이그레이션 할 때 사용
 
-#### Q. unknown은 어떨 때 사용할 수 있을까요?
+### Q. unknown은 어떨 때 사용할 수 있을까요?
 
 - 강제 타입 캐스팅을 통해 타입을 전환할 때 사용
   - `const env = process.env as unknown as ProcessEnv`
 - 에러 핸들링할 때 사용
   </details>
 
-## 📝 void type
+# 📝 void type
 
 - `void 타입은 undefined가 아니다!`
   - undefined or null 값을 할당 가능
 - 함수가 어떤 값을 반환하지 않는 경우에 void를 지정
 
-## 📝 never type
+# 📝 never type
 
 - 값을 반환할 수 없는 타입
 - 모든 타입의 하위 타입
 - never 자신을 제외한 어떤 타입도 never 타입에 할당 불가능
 
-### ✏️ JS에서 값을 반환할 수 없는 경우
+## ✏️ JS에서 값을 반환할 수 없는 경우
 
-#### 에러를 던지는 경우
+### 에러를 던지는 경우
 
 - throw keyword를 사용하면 에러를 발생시킬 수 있음 -> 값을 반환하는 것으로 간주 X
 - 특성 함수가 실행 중 마지막에 `에러를 던지는 작업을 수행하면 반환 타입은 never`
@@ -89,11 +89,11 @@
   }
   ```
 
-#### 무한히 함수가 실행되는 경우
+### 무한히 함수가 실행되는 경우
 
 - 무한 루프는 함수가 종료되지 않음을 의미 -> 값을 반환하지 못함
 
-## 📝 Array type
+# 📝 Array type
 
 - `Object.prototype.toString.call()` 문법을 사용하여 객체의 타입(인스턴스)을 알아낼 수 있음
 
@@ -105,7 +105,7 @@
 
 - TS에서는 일반적으로 배열의 크기까지 제한 X
 
-### ✏️ Tuple type
+## ✏️ Tuple type
 
 - 배열 타입의 하위 타입으로 기존 TS의 배열 기능에 길이 제한까지 추가한 타입 시스템
 
@@ -141,7 +141,7 @@
   const optionalTuple2: [number, number, number?] = [1, 2, 3];
   ```
 
-## 📝 enum type
+# 📝 enum type
 
 - 일종의 구조체를 만드는 타입 시스템
 
@@ -164,7 +164,7 @@
   ProgrammingLanguage[400]; // TypeScript
   ```
 
-### ✏️ enum의 왜 쓸까?
+## ✏️ enum의 왜 쓸까?
 
 - 주로 문자열 상수를 생성하는 데 사용
 - 가독성을 높임
@@ -253,9 +253,9 @@
 
 ### 🌐 [enum, const enum, 트리쉐이킹 관련 블로그](https://engineering.linecorp.com/ko/blog/typescript-enum-tree-shaking)
 
-# 타입 조합
+<h1>타입 조합</h1>
 
-## 📝 교차 타입(Intersection type)
+# 📝 교차 타입(Intersection type)
 
 - `&` 사용
 - 여러 가지 타입을 결합하여 하나의 단일 타입으로 생성
@@ -269,7 +269,7 @@
   type ProductItemWithPrice = ProductItem & { price: number };
   ```
 
-## 📝 유니언 타입(Union type)
+# 📝 유니언 타입(Union type)
 
 - `|` 사용
 - `A | B` -> 타입 A 또는 타입 B 중 하나가 될 수 있는 타입(동시 만족 X)
@@ -297,7 +297,7 @@
   };
   ```
 
-## 📝 인덱스 시그니처(Index Signatures)
+# 📝 인덱스 시그니처(Index Signatures)
 
 - 미리 알려지지 않은 속성(필드)의 모양을 정의하는 방법으로 `특정 타입의 key는 알 수 없지만, 값의 타입을 알고 있을 때 사용하는 문법`
 - `[key: K]: T` -> 속성 키는 모두 K 타입, 속성 값은 모두 T 타입을 가짐
@@ -330,7 +330,7 @@
   const noData = x["notExist"]; // undefined 반환
   ```
 
-## 📝 인덱스드 엑세스 타입(Indexed Access Types)
+# 📝 인덱스드 엑세스 타입(Indexed Access Types)
 
 - 다른 타입의 특정 속성이 가지는 타입을 조회하기 위해 사용
 - 인덱스에 사용되는 타입 또한 그 자체로 타입이기 때문에 Union, keyof, 타입 별칭 등의 표현에 사용 가능
@@ -364,7 +364,7 @@
   type PromotionType = (typeof PromotionList)[number]; // // { type: string, name: string }
   ```
 
-## 📝 템플릿 리터럴 타입(Template Literal Types)
+# 📝 템플릿 리터럴 타입(Template Literal Types)
 
 - JS의 템플릿 리터럴 문자열을 사용하여 문자열 리터럴 타입을 선언할 수 있는 문법
   ```ts
@@ -373,13 +373,13 @@
   ```
   - 유니언타입 멤버들이 차례대로 해당 변수에 들어가서 -stage가 붙은 문자열 리터럴의 유니온 타입을 결과로 반환
 
-## 📝 제네릭(Generic)
+# 📝 제네릭(Generic)
 
 - 다양한 타입 간에 재사용성을 높이기 위해 사용하는 문법
 - 꺾쇠괄호(`<>`)를 통해 표현하며, 사용할 때는 함수에 매개변수를 넣는 것과 유사하게 원하는 타입을 넣어주면 된다.
 - 보통 타입 변수명으로 `T(Type), E(Element), K(Key), V(Value), P(Parameter)` 등 한 글자로 된 이름을 많이 사용
 
-#### 제네릭의 기본값 - `=`를 사용하여 추가 가능
+### 제네릭의 기본값 - `=`를 사용하여 추가 가능
 
 ```ts
 // 제네릭에서 배열에만 존재하는 length 속성은 참조 불가
@@ -402,7 +402,7 @@ function exampleFucn2<T extends TypeWithLength>(arg: T): number {
 - 파일 확장자가 tsx일 때 화살표 함수에 제네릭을 사용하면 에러 발생
 - 이유: tsx: TS + JSX 이므로 제네릭의 꺾쇠괄호와 태그의 꺾쇠괄호를 혼동하여 문제가 발생
 
-#### 해결 방법
+### 해결 방법
 
 - extends 키워드 사용하여 특정 타입의 하위 타입만 올 수 있음을 알려주기
 
@@ -418,7 +418,7 @@ function exampleFucn2<T extends TypeWithLength>(arg: T): number {
   };
   ```
 
-## 📝 맵드 타입(Mapped Types)
+# 📝 맵드 타입(Mapped Types)
 
 - 다른 타입을 기반으로 새로운 타입을 선언할 때 사용하는 문법
 - JS의 map method라고 생각하면 이해하기 쉽다.
@@ -439,57 +439,57 @@ function exampleFucn2<T extends TypeWithLength>(arg: T): number {
   const cExample: Subset<Example> = { c: true }; // Object literal may only specify known properties, and 'c' does not exist in type 'Subset<Example>'
   ```
 
-  ### ✏️ 다양한 수식어
+## ✏️ 다양한 수식어
 
-  #### `readonly`: 읽기 전용 속성으로 만들 때
+### `readonly`: 읽기 전용 속성으로 만들 때
 
-  ```ts
-  type ReadOnly<T> = {
-    readonly [K in keyof T]: T[K];
+```ts
+type ReadOnly<T> = {
+  readonly [K in keyof T]: T[K];
+};
+```
+
+### `?`: 옵셔널 매개변수 만들 때
+
+```ts
+// T의 모든 속성을 옵션 속성으로 변경
+type Optional<T> = {
+  [K in keyof T]: T[K];
+};
+```
+
+### `-`: 특정 속성을 제거할 때 조합하여 사용
+
+```ts
+// T의 모든 속성을 필수 속성으로 변경
+type Concrete<T> = {
+  [K in keyof T]-?: T[K];
+};
+```
+
+### `as`: key의 이름을 재지정 가능
+
+```ts
+const BottomSheetMap = {
+  RECENT_CONTACTS: RecentContactBottomSheet,
+  CARD_SELECT: CardSelectBottomSheet,
+  SORT_FILTER: SortFilterBottomSheet,
+  PRODUCT_SELECT: ProductSelectBottomSheet,
+};
+
+type BOTTOM_SHEET_ID = keyof typeof BottomSheetMap;
+type BottomSheetStore = {
+  [index in BOTTOM_SHEET_ID as `${index}_BOTTOM_SHEET`]: {
+    resolver?: (payload: any) => void;
+    args?: any;
+    isOpened: boolean;
   };
-  ```
+};
+```
 
-  #### `?`: 옵셔널 매개변수 만들 때
+<h1>제네릭 사용법</h1>
 
-  ```ts
-  // T의 모든 속성을 옵션 속성으로 변경
-  type Optional<T> = {
-    [K in keyof T]: T[K];
-  };
-  ```
-
-  #### `-`: 특정 속성을 제거할 때 조합하여 사용
-
-  ```ts
-  // T의 모든 속성을 필수 속성으로 변경
-  type Concrete<T> = {
-    [K in keyof T]-?: T[K];
-  };
-  ```
-
-  #### `as`: key의 이름을 재지정 가능
-
-  ```ts
-  const BottomSheetMap = {
-    RECENT_CONTACTS: RecentContactBottomSheet,
-    CARD_SELECT: CardSelectBottomSheet,
-    SORT_FILTER: SortFilterBottomSheet,
-    PRODUCT_SELECT: ProductSelectBottomSheet,
-  };
-
-  type BOTTOM_SHEET_ID = keyof typeof BottomSheetMap;
-  type BottomSheetStore = {
-    [index in BOTTOM_SHEET_ID as `${index}_BOTTOM_SHEET`]: {
-      resolver?: (payload: any) => void;
-      args?: any;
-      isOpened: boolean;
-    };
-  };
-  ```
-
-# 제네릭 사용법
-
-## 📝 함수의 제네릭
+# 📝 함수의 제네릭
 
 - 함수의 매개변수나 반환 값에 다양한 타입을 넣고 싶을 때 제네릭을 사용 가능
 
@@ -501,7 +501,7 @@ function exampleFucn2<T extends TypeWithLength>(arg: T): number {
   }
   ```
 
-## 📝 호출(타입) 시그니처의 제네릭
+# 📝 호출(타입) 시그니처의 제네릭
 
 - 함수 타입을 지정하는 문법으로 매개변수와 반환 타입을 미리 선언하여 타입을 정의하는 것
 
@@ -510,7 +510,7 @@ function exampleFucn2<T extends TypeWithLength>(arg: T): number {
   let log: LogFn = (text) => console.log(text);
   ```
 
-## 📝 제네릭 클래스
+# 📝 제네릭 클래스
 
 - 외부에서 입력된 타입을 클래스 내부에 적용할 수 있는 클래스
 
@@ -544,7 +544,7 @@ function exampleFucn2<T extends TypeWithLength>(arg: T): number {
   - 제네릭 타입 매개변수들은 클래스가 사용될 때 실제 타입으로 대체된다.
   - `클래스 전체`에 걸쳐 타입 매개변수가 적용된다.
 
-## 📝 제한된 제네릭
+# 📝 제한된 제네릭
 
 - 타입 매개변수에 대한 제약 조건을 설정하는 기능
 
@@ -568,7 +568,7 @@ function exampleFucn2<T extends TypeWithLength>(arg: T): number {
   - sellFruit 타입 매개변수 T는 Fruit라는 타입으로 제약 조건이 설정되어 있다. 이처럼 타입 매개변수가 특정 타입에 묶여 있을 때 해당 키를 `바운드 타입 매개변수`라 부른다.
   - 상속된 Fruit는 T의 `상한 한계`라고 부른다.
 
-## 📝 확장된 제네릭
+# 📝 확장된 제네릭
 
 - 제네릭 타입은 여러 타입을 상속받을 수 있으며 타입 매개변수를 여러 개 둘 수 있다.
 
@@ -580,11 +580,11 @@ function exampleFucn2<T extends TypeWithLength>(arg: T): number {
   <Key extends string | number>
   ```
 
-## 📝 제네릭 예시
+# 📝 제네릭 예시
 
-### ✏️ 제네릭을 사용하지 않아도 되는 경우
+## ✏️ 제네릭을 사용하지 않아도 되는 경우
 
-#### 1. 제네릭을 굳이 사용하지 않아도 되는 타입
+### 1. 제네릭을 굳이 사용하지 않아도 되는 타입
 
 ```ts
 type Gtype<T> = T; // 타입 매개변수를 그대로 선언하는 것과 같은 기능을 한다.
@@ -602,7 +602,7 @@ interface Order {
 }
 ```
 
-#### 2. any 사용하기
+### 2. any 사용하기
 
 - any 타입은 사실상 JS와 동일한 방식으로 코드를 작성하는 것과 같다. 따라서 any를 사용하면 제네릭을 포함헤 타입을 지정하는 의미가 사라진다.
 
@@ -612,7 +612,7 @@ type ReturnType<T = any> {
 }
 ```
 
-#### 3. 가독성을 고려하지 않은 사용
+### 3. 가독성을 고려하지 않은 사용
 
 - 과도한 제네릭은 가독성을 해친다.
 - 복잡한 제네릭은 `의미 단위로 분할`해서 사용하는 것이 좋다.
