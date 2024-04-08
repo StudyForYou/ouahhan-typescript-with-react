@@ -311,17 +311,283 @@ function isListItem(listItems: ListItem[]) {
 
 ## ✏️ 타입 가드 활용하기
 
+- Axios 라이브러리에서는 Axios 에러에 대해 isAxiosError라는 타입 가드를 제공하고 있다.
+- ErrorResponse 인터페이스를 사용하여 처리해야 할 Axios 에러 형태는 `AxiosError<ErrorResponse>`로 표현할 수 있으며 다음과 같이 타입 가드를 명시적으로 작성할 수 있다.
+
+  ```ts
+  // 공통 에러객체에 대한 타입
+  interface ErrorResponse {
+    status: string;
+    serverDateTime: string;
+    errorCode: string;
+    errorMessage: string;
+  }
+
+  // 사용자 정의 타입 가드 작성
+  function isServerError(error: unknown): error is AxiosError<ErrorResponse> {
+    return axios.isAxiosError(error);
+  }
+
+  const onClickdeleteHistoryButton = async (id: string) => {
+    try {
+      await axios.post("https://...", { id });
+      alert("주문 내역이 삭제되었습니다.");
+    } catch (error: unknown) {
+      // 서버 에러일 때의 처리임을 명시적으로 알 수 있다.
+      if (isServerError(e) && e.response && e.response.data.errorMessage) {
+        serErrorMessage(e.response.data.errorMessage);
+        return;
+      }
+
+      setErrorMessage(
+        "일시적인 에러가 발생했습니다. 잠시 후 다시 시도해주세요"
+      );
+    }
+  };
+  ```
+
 ## ✏️ 에러 서브클래싱하기
+
+- 실제 요청을 처리할 때 단순한 서버 에러도 발생하지만 인증 정보 에러, 네트워크 에러, 타임아웃 에러 같은 에러가 발생하기도 한다.
+- 이를 더욱 명시적으로 표시하기 위해 `서브클래싱`을 활용할 수 있다.
+
+  ```ts
+  class OrderHttpError extends Error {
+    private readonly privateResponse: AxiosResponse<ErrorResponse> | undefined;
+
+    constructor(message?: string, response?: AxiosResponse<ErrorResponse>) {
+      super(message);
+      this.name = "OrderHttpError";
+      this.privateResponse = response;
+    }
+
+    get response(): AxiosResponse<ErrorResponse> | undefined {
+      return this.privateResponse;
+    }
+  }
+
+  class NetworkError extends Error {
+    constructor(message = "") {
+      super(message);
+      this.name = "NetworkError";
+    }
+  }
+
+  class UnauthorizedHttpError extends Error {
+    constructor(message: string, response?: AxiosResponse<ErrorResponse>) {
+      super(message, response);
+      this.name = "UnauthorizedError";
+    }
+  }
+  ```
 
 ## ✏️ 인터셉터를 활용한 에러 처리
 
+```ts
+const httpErrorHandler = (
+  error: AxiosError<ErrorResponse> | Error
+): Promise<Error> => {
+  let promiseError: Promise<Error>;
+
+  if (axios.isAxiosError(error)) {
+    if (Object.is(error.code, "ECONNABORTED")) {
+      promiseError = Promise.reject(new TimeoutError());
+    } else if (Object.is(error.message, "Network Error")) {
+      promiseError = Promise.reject(new NetworkError(""));
+    } else {
+      const { response } = error as AxiosError<ErrorResponse>;
+
+      switch (response?.status) {
+        case HttpStatusCode.UNAUTHORIZED:
+          promiseError = Promise.reject(
+            new UnauthorizedError(response?.data.message, response)
+          );
+          break;
+        default:
+          promiseError = Promise.reject(
+            new OrderHttpError(response?.data.message, response)
+          );
+      }
+    }
+  } else {
+    promiseError = Promise.reject(error);
+  }
+
+  return promiseError;
+};
+
+// 인터셉터 내부에서 사용
+orderApiRequester.interceptors.response.use(
+  (response: AxiosResponse) => response,
+  httpErrorHandler
+);
+```
+
 ## ✏️ 에러 바운더리를 활용한 에러 처리
+
+- `react-error-boundary` 라이브러리를 통해 `ErrorBoundary` 사용 가능
+- react query와 혼합해서 사용할 수 있다.
+
+### 참고 사항
+
+- [React 공식문서 - useTransition 예제](https://react.dev/reference/react/useTransition#displaying-an-error-to-users-with-error-boundary)
+- [React query와 사용한 예제](https://yiyb-blog.vercel.app/posts/error-boundary-with-react-query)
 
 ## ✏️ 상태 관리 라이브러리에서의 에러 처리
 
+- Redux 에러 처리
+
+```ts
+//api 호출에 관한 api call reducer
+const apiCallSlice = createSlice({
+  name: "apiCall",
+  initialState,
+  reducers: {
+    setApiCall: (state, { payload: { status, urlInfo } }) => {
+      /* api state를 채우는 로직*/
+    },
+    setApiCallError: (state, { payload }: PayloadAction<any>) => {
+      state.error = payload;
+    },
+  },
+});
+
+const API = axios.create();
+
+const setaxiosInterceptor = (store: EnhancedStroe) => {
+  //중복 코드 생략
+
+  //onSuccess시 처리를 인터셉터로 처리
+  API.interceptors.response.use(
+    (response: AxiosResponse) => {
+      const { method, url } = reponse.config;
+
+      sotre.dispatch(
+        setApiCall({
+          status: ApiCallstauts.None,
+          urlInfo: { url, method },
+        })
+      );
+
+      return response?.data?.data || response?.data;
+    },
+    (error: AxiosError) => {
+      //에러 상태를 관리하지 않고 처리할 수 있는 경우 바로 처리
+      if (error.response?.status === 401) {
+        window.location.href = error.response.headers.location;
+        return;
+      } else if (error.response?.stateu === 403) {
+        window.location.href = error.response.headers.location;
+        return;
+      } else {
+        message.error("error");
+      }
+
+      const {
+        config: { url, method },
+      } = error;
+
+      store.dispatch(
+        setApiCall({
+          status: ApiCallStatus.None,
+          urlInfo: { url, method },
+        })
+      );
+
+      return Promise.reject(error);
+    }
+  );
+};
+
+const fetchmenu = createAsyncThunk(
+    FETCH_MENU_REQUESTm
+    async({shopId, menuId}:FetchMenu) => {
+        try{
+            const data = await api.fetchMenu(shopId, menuId)
+            return data
+        }catch(error) {
+            //에러를 상태로 처리
+            setApiCallError({error})
+        }
+    }
+)
+```
+
+- 에러 상태를 관리하지 않고 처리할 수 있다면 바로 처리(ex. 401, 403)하고, 그렇지 않다면 reject로 넘겨준다.
+- 이후 액션을 정의하면서 setApiCallError를 사용하여 에러를 상태로 처리한다.
+
 ## ✏️ react-query를 활용한 에러 처리
 
+- react-query나 swr과 같은 데이터 fetching 라이브러리를 사용하면 요청에 대한 상태를 반환해주기 때문에 요청 상태를 확인하기 쉽다.
+
+  ```tsx
+  const JobComponent: React.FC = () => {
+    const { isError, error, isLoading, data } = useFetchJobList();
+
+    if (isError) {
+      return <div>{error.message}</div>;
+    }
+
+    if (isLoading) {
+      return <div>로딩중입니다...</div>;
+    }
+
+    return <>{data}</>;
+  };
+  ```
+
 ## ✏️ 그 밖의 에러 처리
+
+- 200번 대 성공 응답에 대한 에러 처리가 필요한 경우를 예시로 들어보자.
+
+```ts
+const successHandler = (response: CreateOrderResponse) =>{
+    if(response.status ==== 'SUCCESS') {
+        return;
+    }
+
+    throw new CustomError(response.status, response.message)
+}
+
+const createOrder=(data:CreateOrderData) => {
+    try{
+        const response = apiRequester.post('https://...',data)
+
+        successHandler(response)
+    }catch(error) {
+        errorHandler(error)
+    }
+}
+```
+
+- API가 많을 때는 매번 `if(reponse === 'SUCCESS')`구문을 추가해줘야 함
+- 커스텀 에러를 사용하고 있는 요청을 일괄적으로 에러로 처리하고 싶은 경우 Axios 등의 라이브러리 기능을 활용하면 됨
+
+  ```tsx
+  const apiRequester: AxiosInstance = axios.create({
+    baseURL: orderApiBaseUrl,
+    ...defaultConfig,
+  });
+
+  export const httpSuccessHandler = (response: AxiosResponse) => {
+    if (response.data.status !== "SUCCESS") {
+      throw new CustomError(response.data.message, response);
+    }
+
+    return response;
+  };
+
+  apiRequester.interceptors.response.use(httpSuccessHandler, httpErrorHandler);
+
+  const createOrder = (data: CreateOrderData) => {
+    try {
+      const response = apiRequester.post("PostUrl", data);
+      httpSuccessHandler(response);
+    } catch (e) {
+      httpErrorHandler(e);
+    }
+  };
+  ```
 
 # 📝 API 모킹
 
@@ -355,6 +621,8 @@ function isListItem(listItems: ListItem[]) {
   // api
   const getServices = ApiRequester.get("/mock/service.ts");
   ```
+
+````
 
 ## ✏️ NextApiHandler 활용하기
 
@@ -471,3 +739,4 @@ const mockFn = ({ status = 200, time = 100, use = true }: MockResult) =>
 
 - axios-mock-adapter는 API를 중간에 가로채는 것으로 실제 API요청을 주고 받지 않는다.
 - 따라서 API 요청의 흐름을 파악하기 위해서는 react-query-devtools 혹은 redux test tool과 같은 도구의 힘을 빌려야한다.
+````
