@@ -501,6 +501,53 @@ const StyledSelect = styled.select<SelectStyleProps>`
 
 ## ✏️ 공변성과 반공변성
 
+### 공변성
+
+- 타입 A가 타입 B의 서브 타입일 때, T&lt;A&gt;가 T&lt;B&gt;의 서브 타입이 되는 것
+- 일반적인 타입들은 공변성을 가지고 있어 좁은 타입에서 넓은 타입으로 할당이 가능하다.
+- 함수의 return값 타입은 공변성
+
+### 반공변성(공변성과 결과값이 반대)
+
+- 타입 A가 타입 B의 서브 타입일 때, T&lt;B&gt;가 T&lt;A&gt;의 서브 타입이 되는 것
+- 함수의 매개변수(parameter) 타입은 반공변성
+- 제네릭 매개변수 타입을 지닌 함수는 반공변성
+
+```ts
+// 모든 유저(회원, 비회원)은 id를 갖고 있음
+interface User {
+  id: string;
+}
+
+interface Member extends User {
+  nickName: string;
+}
+
+// Member ⊂ User 일 때,
+// Array<Member> ⊂ Array<User> 이면 공변성을 만족한다.
+let users: Array<User> = [];
+let members: Array<Member> = [];
+
+// 따라서 넓은 타입(Array<User>)의 변수(users)에 좁은 타입(Array<Member>)의 변수(members) 할당이 가능하고 반대는 불가하다.
+users = members; // ✅ Ok
+members = users; // 🚨 Error
+```
+
+```ts
+type PrintUserInfo<U extends User> = (user: U) => void;
+
+let printUser: PrintUserInfo<User> = (user) => console.log(user.id);
+let printMember: PrintUserInfo<Member> = (user) =>
+  console.log(user.id, user.nickName);
+
+printUser = printMember; // Error - Property 'nickName' is missing in type 'User' but required in type 'Member'
+printMember = printUser; // Ok
+```
+
+- 타입의 경우 좁은 타입에 넓은 타입을 할당하더라도, 좁은 타입에 해당하는 속성만 접근할테니 속성이 초과하는 내용이 있어도 상관이 없다.
+- 하지만 함수의 경우 넓은 타입의 매개변수를 함수 몸체에서 사용하고 있을 것이다. 이때 좁은 타입을 매개변수를 가진 함수를 할당하면, 기존에 사용하고 있던 초과 속성에 대한 내용이 누락되어 오류를 일으킬 가능성이 있다.
+- 따라서 안전한 타입 가드를 위해서는 특수한 경우를 제외하고는 `반공변적인 함수 타입(화살표 함수 표현식)을 설정하는 것이 권장`된다.
+
 # 📝 정리
 
 ```ts
