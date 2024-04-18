@@ -289,3 +289,316 @@ const Button = forwardRef<HTMLButtonElement, NativeButtonType>((props, ref) => {
 - forwardRef는 2개의 제네릭 인자를 받을 수 있는데, 첫 번째는 ref에 대한 타입 정보, 두 번째는 props에 대한 타입 정보이다.
 - 함수 컴포넌트의 props로 DetailedHTMLProps와 같이 ref를 포함하는 타입을 사용하게 되면, 실제로는 동작하지 않는 ref를 받도록 타입이 지정되어 예기치 않은 에러가 발생할 수 있다.
 - 따라서, **HTML 속성을 확장하는 props를 설계할 때는 `ComponentPropsWithoutRef` 타입을 사용하여 ref가 실제로 forwardRef와 함께 사용될 때만 props로 전달되도록 타입을 정의하는 것이 안전하다.**
+
+<br/>
+<br/>
+
+# 📝 TS로 리액트 컴포넌트 만들기
+
+## ✏️ JSX로 구현된 Select 컴포넌트
+
+```jsx
+const Select = ({ onSelect, options, selectedOption }) => {
+  const handleChange = (e) => {
+    const selected = Object.entries(options).find(
+      ([_, value]) => value === e.target.value
+    )?.[0];
+    onChange?.(selected);
+  };
+
+  return (
+    <select
+      onChange={handleChange}
+      value={selectedOption && options[selectedOption]}
+    >
+      {Object.entries(options).map(([key, value]) => (
+        <option key={key} value={value}>
+          {value}
+        </option>
+      ))}
+    </select>
+  );
+};
+```
+
+## ✏️ JSDocs로 일부 타입 지정하기
+
+```js
+/**
+ * Select 컴포넌트
+ * @param {Object} props - Select 컴포넌트로 넘겨주는 속성
+ * @param {Object} props.options - { [key: string]: string } 형식으로 이루어진 option 객체
+ * @param {string | undefined} props.selectedOption - 현재 선택된 option의 key 값(optional)
+ * @param {function} props.onChange - select 값이 변경되었을 때 불리는 callback 함수
+ * @returns {JSX.Element}
+ */
+const Select = // ...
+```
+
+- JSDocs를 활용하면 컴포넌트에 대한 설명과 각 속성이 어떤 역할을 하는지 간단하게 알려줄 수 있다.
+
+## ✏️ props 인터페이스 적용하기
+
+- JSX로 구현된 Select 컴포넌트를 TSX로 순차적으로 변경해보자
+
+```tsx
+type Option = Record<string, string>; // {[key: string]: string}
+// 🚨 넓은 범위의 타입은 해당 타입을 사용하는 함수에 잘못된 타입이 전달될 수 있기 때문에, 가능한 한 타입을 좁게 제한하여 사용하길 권장한다.
+
+interface SelectProps {
+  options: Option;
+  selectedOption?: string;
+  onChange?: (selected?: string) => void;
+}
+
+const Select = ({
+  options,
+  selectedOption,
+  onChange,
+}: SelectProps): JSX.Element => {
+  // ...
+};
+```
+
+## ✏️ 리액트 이벤트
+
+- 리액트는 가상DOM을 다루면서 이벤트도 별도로 관리한다.
+- 리액트 컴포넌트에 등록되는 이벤트 리스너는 onClick, onChange처럼 `카멜 케이스`로 표기한다.
+- 리액트 이벤트 핸들러는 이벤트 버블링 단계에서 호출된다.
+- 이벤트 캡처 단계에서 이벤트 핸들러를 등록하기 위해서는 onClickCapture, onChangeCapture와 같이 일반 이벤트 리스너 이름 뒤에 `Captrue`를 붙여야 한다.
+- 또한, 리액트는 브라우저 이벤트를 합성한 [합성 이벤트(SyntheticEvent)](https://ko.legacy.reactjs.org/docs/events.html)를 제공한다.
+
+```tsx
+// Select 컴포넌트의 이벤트 핸들러에 타입을 지정해주자.
+const Select = ({ onChange, options, selectedOption }: SelectProps) => {
+  const handleChange: React.ChangeEventHandler<HTMLSelectElement> = (e) => {
+    const selected = Object.entries(options).find(
+      ([_, val]) => val === e.target.value
+    )?.[0];
+    onChange?.(selected);
+  };
+
+  return <select onChange={handleChange}>{/* ... */}</select>;
+};
+```
+
+## ✏️ 훅에 타입 추가하기
+
+- 아래 예시는 Select 컴포넌트를 사용하여 과일을 선택할 수 있는 컴포넌트를 나타낸 것이다.
+
+  ```tsx
+  const fruits = {
+    apple: "사과",
+    banana: "바나나",
+    blueberry: "블루베리",
+  };
+
+  type Fruit = keyof typeof fruits;
+
+  const FruitSelect: VFC = () => {
+    // 변경 전 코드
+    const [fruit, changeFruit] = useState();
+
+    // 변경 후 코드
+    const [fruit, changeFruit] = useState<Fruit | undefined>("apple");
+
+    return (
+      <Select onChange={changeFruit} options={fruit} selectedOption={fruit} />
+    );
+  };
+  ```
+
+  - fruit가 반드시 apple, banana, blueberry 중 하나라고 기대하고 있을 것이다.
+  - 하지만 useState에 제네릭 타입을 지정해주지 않는다면 fruit 관련된 state값을 사용하는 onChange의 타입이 일치하지 않아 오류가 발생한다.
+  - 또한, 제네릭을 string 타입으로 정한다면 fruit 타입에 속하지 않는 과일이 들어왔을 때 컴파일러가 오류를 검출하지 않는 사이드 이펙트가 발생한다.
+
+## ✏️ 제네릭 컴포넌트 만들기
+
+- 현재 selectedOption은 options에 존재하지 않는 값을 받아도 아무론 오류가 발생하지 않는다.(string 타입)
+- 따라서, 제네릭을 이용하여 컴포넌트를 재정의할 필요가 있다.
+
+```tsx
+// 변경 전
+interface SelectProps {
+  options: Option;
+  selectedOptions?: string;
+  onChange?: (selected?: string) => void;
+}
+
+// 변경 후
+interface SelectProps<OptionType extends Record<string, string>> {
+  options: OptionType;
+  selectedOption?: keyof OptionType;
+  onChange?: (selected?: keyof OptionType) => void;
+}
+
+const Select = <OptionType extends Record<String, string>>({
+  options,
+  selectedOption,
+  onChange,
+}: SelectProps<OptionType>) => {
+  /// select component implementation
+};
+```
+
+## ✏️ HTMLAttributes, ReactProps 적용하기
+
+- 리액트에서 제공하는 타입을 사용하면 HTML attribute의 지정된 타입과 일치하도록 속성을 가져올 수 있다.
+
+  ```ts
+  type ReactSelectProps = React.ComponentPropsWithoutRef<"select">;
+
+  interface SelectProps<OptionType extends Record<string, string>> {
+    id?: ReactSelectProps["id"];
+    className?: ReactSelectProps["className"];
+    //...
+  }
+  ```
+
+- ReactProps에서 여러 개의 타입을 가져와야 한다면 Pick 타입을 활용할 수 있다.
+
+  ```ts
+  interface SelectProps<OptionType extends Record<string, string>>
+    extends Pick<ReactSelectProps, "id", "key" /*...*/> {
+    //...
+  }
+  ```
+
+## ✏️ styled-components를 활용한 스타일 정의
+
+- CSS-in-JS 라이브러리인 styled-components를 활용하여 리액트 컴포넌트에 스타일 관련 타입을 추가해보자.
+
+```ts
+// 스타일 타입 구성
+export const theme = {
+  fontSize: {
+    default: "16px",
+    small: "14px",
+    large: "18px",
+  },
+  color: {
+    white: "#FFFFFF",
+    black: "#000000",
+  },
+};
+type Theme = typeof theme;
+export type FontSize = keyof Theme["fontSize"];
+export type Color = keyof Theme["color"];
+```
+
+```tsx
+// style 관련된 props 작성 후 StyledSelect라는 select style 컴포넌트를 정의
+interface SelectStyleProps {
+  color: Color;
+  fontSize: FontSize;
+}
+
+const StyledSelect = styled.select<SelectStyleProps>`
+  color: ${({ color }) => theme.color[color]};
+  font-size: ${({ fontSize }) => theme.fontSize[fontSize]};
+`;
+```
+
+## ✏️ 공변성과 반공변성
+
+# 📝 정리
+
+```ts
+// styled-components 테마 정리
+export const theme = {
+  fontSize: {
+    default: "16px",
+    small: "14px",
+    large: "18px",
+  },
+  color: {
+    white: "#FFFFFF",
+    black: "#000000",
+  },
+};
+
+type Theme = typeof theme;
+export type FontSize = keyof Theme["fontSize"];
+export type Color = keyof Theme["color"];
+```
+
+```tsx
+// styled-components: 커스텀 select 정의
+interface SelectStyleProps {
+  color: Color;
+  fontSize: FontSize;
+}
+
+const StyledSelect = styled.select<SelectStyleProps>`
+  color: ${({ color }) => theme.color[color]};
+  fontsize: ${({ fontSize }) => theme.fontSize[fontSize]};
+`;
+
+// Select 컴포넌트 정의
+type ReactSelectProps = React.ComponentPropsWithoutRef<"select">;
+interface SelectProps<OptionType extends Record<string, string>>
+  extends Partial<SelectStyleProps> {
+  id?: ReactSelectProps["id"];
+  className?: ReactSelectProps["className"];
+  options: OptionType;
+  selectedOption?: keyof OptionType;
+  onChange?: (selected?: keyof OptionType) => void;
+}
+
+export const Select = <OptionType extends Record<string, string>>({
+  className,
+  id,
+  options,
+  onChange,
+  selectedOption,
+  fontSize = "default",
+  color = "black",
+}: SelectProps<OptionType>) => {
+  const handleChange: React.ChangeEventHandler<HTMLSelectElement> = (e) => {
+    const selected = Object.entries(options).find(
+      ([, value]) => value === e.target.value
+    )?.[0];
+    onChange?.(selected);
+  };
+
+  return (
+    <StyledSelect
+      id={id}
+      className={className}
+      fontSize={fontSize}
+      color={color}
+      onChange={handleChange}
+      value={selectedOption && options[selectedOption]}
+    >
+      {Object.entries(options).map(([key, value]) => (
+        <option key={key} value={value}>
+          {value}
+        </option>
+      ))}
+    </StyledSelect>
+  );
+};
+```
+
+```tsx
+const fruits = {
+  apple: "사과",
+  banana: "바나나",
+  blueberry: "블루베리",
+};
+type Fruit = keyof typeof fruits;
+
+export const FruitSelect = () => {
+  const [fruit, changeFruit] = useState<Fruit | undefined>();
+
+  return (
+    <Select
+      className="fruitSelectBox"
+      options={fruits}
+      onChange={changeFruit}
+      selectedOption={fruit}
+      fontSize="large"
+    />
+  );
+};
+```
