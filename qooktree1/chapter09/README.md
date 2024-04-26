@@ -188,7 +188,7 @@ const ChildComponent = forwardRef((props, ref) => {
   // useImperativeHandle을 사용하여 부모 컴포넌트에 노출할 메서드를 정의합니다.
   useImperativeHandle(ref, () => ({
     focus: () => {
-      childRef.current.focus();
+      inputRef.current.focus();
     },
   }));
 
@@ -221,6 +221,8 @@ export default ParentComponent;
 
 - 자식 컴포넌트를 저장하는 변수로 활용
 - 상태가 변경되더라도 불필요한 리렌더링을 피할 수 있다.
+
+- [좋은 공식문서 예시](https://ko.react.dev/reference/react/useRef#referencing-a-value-with-a-ref)
 
 ```tsx
 const Banner = ({ autoplay }: { autoplay: boolean }) => {
