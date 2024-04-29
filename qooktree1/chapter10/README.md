@@ -227,6 +227,19 @@ interface State {
   - useReducer는 `무엇을 변경할지`와 `어떻게 변경할지`를 분리하여 `dispatch`를 통해 어떤 작업을 할지를 액션으로 넘기고 reducer 함수 내에서 상태를 업데이트하는 방식을 정의한다.
   - 이로써 복잡한 상태로직을 숨기고 안정성을 높일 수 있다.
 
+- 이외에도 boolean 상태를 토글하는 액션만 사용하는 경우에는 useState 대신 useReducer를 사용하곤 한다.
+
+  ```tsx
+  import { useReducer } from "react";
+
+  // Before
+  const [fold, setFold] = useState(true);
+  const toggleFold = () => setFold((prev) => !prev);
+
+  // After
+  const [fold, toggleFold] = useReducer((v) => !v, true);
+  ```
+
 ## ✏️ 전역 상태 관리와 상태 관리 라이브러리
 
 - 상태는 사용하는 곳과 최대한 가까워야 하며 사용 범위를 제한해야만 한다.
