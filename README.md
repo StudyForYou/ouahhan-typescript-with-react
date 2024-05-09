@@ -1,5 +1,36 @@
 # 우아한 타입스크립트 with 리액트 스터디 레포 🧵
 
+## 🤓 스터디원 🤓
+
+<table>
+<tbody>
+<tr>
+<td align="center"><img src="./assets/" width="120" /></td>
+<td align="center"><img src="./assets/" width="120" /></td>
+<td align="center"><img src="./assets/" width="120" /></td>
+<td align="center"><img src="./assets/" width="120" /></td>
+<td align="center"><img src="./assets/" width="120" /></td>
+</tr>
+<tr>
+<th align="center">김소은</th>
+<th align="center">김연우</th>
+<th align="center">박종민</th>
+<th align="center">신혜윤</th>
+<th align="center">전수빈</th>
+</tr>
+<tr>
+<td align="center" width="120"><a href="https://github.com/summerkimm">@summerkimm</a></td>
+<td align="center" width="120"><a href="https://github.com/drizzle96">@drizzle96</a></td>
+<td align="center" width="120"><a href="https://github.com/qooktree1">@qooktree1</a></td>
+<td align="center" width="120"><a href="https://github.com/hyeyoonS">@hyeyoonS</a></td>
+<td align="center" width="120"><a href="https://github.com/SoobinJ">@SoobinJ</a></td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+
 ## 목표
 
 - 우아한 타입스크립트 with 리액트를 끝까지 완수한다.
@@ -51,3 +82,5 @@
 - [code-itch - 이펙티브 타입스크립트](https://github.com/code-itch/effective-typescript)
 - [위어소프트](https://github.com/WeareSoft)
 - [java-squid](https://github.com/java-squid/effective-java)
+
+
